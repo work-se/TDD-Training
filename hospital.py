@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 import consts
 from dtos.statistics_dto import StatisticsDto
@@ -9,7 +9,7 @@ class Hospital:
     
     def __init__(self,):
         self.patients = {}
-        self.patiens_number = 0
+        self.patients_number = 0
         
     @classmethod
     def get_disease_id(cls, disease_name: Optional[str]) -> int:
@@ -17,16 +17,16 @@ class Hospital:
     
     def add_patient(self, disease_name: str = None) -> Patient:
         disease_id = self.get_disease_id(disease_name)
-        self.patiens_number+= 1
-        new_patient = Patient(self.patiens_number, disease_id)
-        self.patients[self.patiens_number] = new_patient
+        self.patients_number += 1
+        new_patient = Patient(self.patients_number, disease_id)
+        self.patients[self.patients_number] = new_patient
         return new_patient
     
-    def get_statistics(self,) -> list[StatisticsDto]:
+    def get_statistics(self,) -> List[StatisticsDto]:
         return [
             StatisticsDto(
                 disease=disease_name,
-                patients_count = len(
+                patients_count=len(
                     list(filter(lambda patient: patient.status == disease_id, self.patients.values()))
                 )
             )

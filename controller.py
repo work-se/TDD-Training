@@ -27,36 +27,51 @@ class InterfaceController:
         except Exception:
             print("Ошибка ввода. ID пациента должно быть числом (целым, положительным)")
     
-    def _patient_cmd(self, command):
+    def _exec_patient_command(self, command):
         patient = self._get_patient()
         if patient is None:
             return
-        
-        match command:
-            case consts.DECREASE_PATIENT_STAT_CMD_RU | consts.DECREASE_PATIENT_STAT_CMD_EN:
-                patient.decrease_disease_status()
-                print(f"Новый статус пациента: {patient.get_disease_status().disease_name}")
-            case consts.INCREASE_PATIENT_STAT_CMD_RU | consts.INCREASE_PATIENT_STAT_CMD_EN:
-                patient.increase_disease_status()
-                print(f"Новый статус пациента: {patient.get_disease_status().disease_name}")
-            case consts.GET_PATIENT_STAT_CMD_RU | consts.GET_PATIENT_STAT_CMD_EN:
-                print(f"Статус пациента: {patient.get_disease_status().disease_name}")
-        
-            
+        if command in consts.DECREASE_PATIENT_STAT_CMDS:
+            patient.decrease_disease_status()
+            print(f"Новый статус пациента: {patient.get_disease_status().disease_name}")
+        if command in consts.INCREASE_PATIENT_STAT_CMDS:
+            patient.increase_disease_status()
+            print(f"Новый статус пациента: {patient.get_disease_status().disease_name}")
+        elif command in consts.GET_PATIENT_STAT_CMDS:
+            print(f"Статус пациента: {patient.get_disease_status().disease_name}")
+
     def exec_command(self):
         command = self._get_user_input()
-        match command:
-            case consts.STAT_CMD_RU | consts.STAT_CMD_EN:
-                self.print_statistics()
-            case consts.STOP_CMD_RU | consts.STOP_CMD_EN:
-                print("Сеанс завершён.")
-                exit()
-            case consts.DECREASE_PATIENT_STAT_CMD_RU | consts.DECREASE_PATIENT_STAT_CMD_EN | \
-                consts.INCREASE_PATIENT_STAT_CMD_RU | consts.INCREASE_PATIENT_STAT_CMD_EN | \
-                consts.GET_PATIENT_STAT_CMD_RU | consts.GET_PATIENT_STAT_CMD_EN:
-                self._patient_cmd(command)
-            case _:
-                print("Неизвестная команда! Попробуйте ещё раз.")
+        if command in consts.STAT_CMDS:
+            self.print_statistics()
+        elif command in consts.STOP_CMDS:
+            print("Сеанс завершён.")
+            exit()
+        elif command in consts.PATIENT_CMDS:
+            self._exec_patient_command(command)
+        else:
+            print("Неизвестная команда! Попробуйте ещё раз.")
+
+    def exec_command_v2(self):
+        command = self._get_user_input()
+        if command in consts.STAT_CMDS:
+            self.print_statistics()
+        elif command in consts.STOP_CMDS:
+            print("Сеанс завершён.")
+            exit()
+        elif command in consts.DECREASE_PATIENT_STAT_CMDS:
+            patient = self._get_patient()
+            patient.decrease_disease_status()
+            print(f"Новый статус пациента: {patient.get_disease_status().disease_name}")
+        elif command in consts.INCREASE_PATIENT_STAT_CMDS:
+            patient = self._get_patient()
+            patient.increase_disease_status()
+            print(f"Новый статус пациента: {patient.get_disease_status().disease_name}")
+        elif command in consts.GET_PATIENT_STAT_CMDS:
+            patient = self._get_patient()
+            print(f"Статус пациента: {patient.get_disease_status().disease_name}")
+        else:
+            print("Неизвестная команда! Попробуйте ещё раз.")
             
     def print_statistics(self,):
         # не выводим статистику по статусам болезни, на которых нет пациентов

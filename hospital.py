@@ -13,7 +13,7 @@ class Hospital:
         
     @classmethod
     def get_disease_id(cls, disease_name: Optional[str]) -> int:
-        return consts.DEFAULT_DISEASE_ID or consts.DISEASE_STATUSES_REVERSED[disease_name]
+        return consts.DEFAULT_DISEASE_ID if disease_name is None else consts.DISEASE_STATUSES_REVERSED[disease_name]
     
     def add_patient(self, disease_name: str = None) -> Patient:
         disease_id = self.get_disease_id(disease_name)
@@ -32,6 +32,9 @@ class Hospital:
             )
             for disease_id, disease_name in consts.DISEASE_STATUSES.items()
         ]
-        
-            
-        
+
+    def __repr__(self):
+        return f"[Hospital] (patients num={self.patients_number}, patients={self.patients})"
+
+    def __str__(self):
+        return f"[Hospital] (patients num={self.patients_number}, patients={self.patients})"

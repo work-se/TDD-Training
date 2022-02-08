@@ -19,7 +19,9 @@ class Patient:
         return PatienStatDto(
             disease_id=self.status, disease_name=consts.DISEASE_STATUSES[self.status]
         )
-    
-    
-    
-        
+
+    def __repr__(self):
+        return f"[Patient] (id={self.patient_id}, status={self.status})"
+
+    def __str__(self):
+        return f"[Patient] (id={self.patient_id}, status={self.status})"

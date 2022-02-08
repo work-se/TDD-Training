@@ -10,6 +10,8 @@ DISEASE_STATUSES_REVERSED = {value: key for key, value in DISEASE_STATUSES.items
 DEFAULT_DISEASE_ID = 1
 
 
+DEFAULT_USERS_COUNT = 200
+
 # commands
 STOP_CMD_RU = "стоп"
 STOP_CMD_EN = "stop"
@@ -30,3 +32,8 @@ GET_PATIENT_STAT_CMD_EN = "get id"
 GET_PATIENT_STAT_CMDS = (GET_PATIENT_STAT_CMD_RU, GET_PATIENT_STAT_CMD_EN)
 
 PATIENT_CMDS = DECREASE_PATIENT_STAT_CMDS + INCREASE_PATIENT_STAT_CMDS + GET_PATIENT_STAT_CMDS
+
+INPUT_COMMAND_TEXT = "Введите команду: "
+INPUT_PATIENT_ID_COMMAND_TEXT = "Введите ID пациента: "
+
+PATIENT_ID_INPUT_TEXT = "Ошибка ввода. ID пациента должно быть числом (целым, положительным)"

@@ -1,0 +1,7 @@
+import consts
+
+DEFAULT_PATIENT_ID = 1
+DEFAULT_DISEASE_ID = 2
+
+MIN_DISEASE_ID = min(consts.DISEASE_STATUSES.keys())
+MAX_DISEASE_ID = max(consts.DISEASE_STATUSES.keys())

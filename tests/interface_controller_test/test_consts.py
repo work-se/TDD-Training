@@ -1,6 +1,0 @@
-DEFAULT_INPUT_STR = "default input"
-DEFAULT_OUTPUT_STR = "default output"
-
-USER_ID_INPUT = "1"
-USER_ID_INPUT_WRONG_1 = "ads"
-USER_ID_INPUT_WRONG_2 = "1.25"

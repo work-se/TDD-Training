@@ -81,5 +81,6 @@ class InterfaceController:
         stat_to_print = list(
             filter(lambda stat: stat.patients_count > 0, self.hospital.get_statistics())
         )
+        self.console.put_output("Статистика по статусам:")
         for stat in stat_to_print:
             self.console.put_output(f'- в статусе "{stat.status_name}": {stat.patients_count} чел.')

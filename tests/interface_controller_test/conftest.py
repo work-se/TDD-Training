@@ -14,7 +14,7 @@ def interface_controller() -> InterfaceController:
 
 @staticmethod
 def mock_get_input(text: str):
-    assert text == test_consts.DEFAULT_OUTPUT_STR, "Переда неверный текст для вывода в консоль пользователю"
+    assert text == test_consts.DEFAULT_OUTPUT_STR, "Передан неверный текст для вывода в консоль пользователю"
     return test_consts.DEFAULT_INPUT_STR
 
 

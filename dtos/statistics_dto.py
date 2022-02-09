@@ -3,5 +3,5 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class StatisticsDto:
-    disease: str
+    status_name: str
     patients_count: int

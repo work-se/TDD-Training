@@ -1,17 +1,13 @@
 from loguru import logger
-
-import consts
-from tests.patient_tests import test_consts
-
 from pytest import fixture
 
 from patient import Patient
-from dtos.patient_dto import PatienStatDto
+from tests.patient_tests import test_consts
 
 
 @fixture
 def patient(create_patient) -> Patient:
-    return create_patient(test_consts.DEFAULT_PATIENT_ID, test_consts.DEFAULT_DISEASE_ID)
+    return create_patient(test_consts.DEFAULT_PATIENT_ID, test_consts.DEFAULT_STATUS_ID)
 
 
 @fixture
@@ -38,7 +34,7 @@ def check_patient_attributes():
     def wrapper(
         patient: Patient,
         expected_patient_id: int = test_consts.DEFAULT_PATIENT_ID,
-        expected_disease_id: int = test_consts.DEFAULT_DISEASE_ID
+        expected_disease_id: int = test_consts.DEFAULT_STATUS_ID
     ):
         logger.debug("Проверка пользователя {}", patient)
         assert patient.patient_id == expected_patient_id, "Неверный id пациента"
@@ -50,12 +46,9 @@ def check_patient_attributes():
 @fixture
 def check_patient_status():
 
-    def wrapper(patient: Patient, expected_disease_id: int = test_consts.DEFAULT_DISEASE_ID):
+    def wrapper(patient: Patient, expected_disease_id: int = test_consts.DEFAULT_STATUS_ID):
         logger.debug("Проверка статуса пользователя {}", patient)
-        status = patient.get_disease_status()
-        assert type(status) == PatienStatDto, "Неожиданный тип статуса пациента"
-        assert status.disease_id == expected_disease_id, "Неверный статус болезни у пациента"
-        assert status.disease_name == consts.DISEASE_STATUSES[expected_disease_id], \
-            "Неверное наименование статуса болезни пациента"
+        status = patient.get_status()
+        assert status == expected_disease_id, "Неверный статус болезни у пациента"
 
     return wrapper

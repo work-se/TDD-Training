@@ -3,12 +3,12 @@ import consts
 from tests.hostpital_tests.dto import ExpectedPatientsCompoundDto
 
 
-PATIENT_TO_ADD = ExpectedPatientsCompoundDto(patient_id=1, disease_id=consts.DEFAULT_DISEASE_ID)
+PATIENT_TO_ADD = ExpectedPatientsCompoundDto(patient_id=1, disease_id=consts.DEFAULT_PATIENT_STATUS)
 
 # несколько пациентов с одним статусом болезни
 PATIENTS_TUPLE_1 = (
-    ExpectedPatientsCompoundDto(patient_id=1, disease_id=consts.DEFAULT_DISEASE_ID),
-    ExpectedPatientsCompoundDto(patient_id=2, disease_id=consts.DEFAULT_DISEASE_ID)
+    ExpectedPatientsCompoundDto(patient_id=1, disease_id=consts.DEFAULT_PATIENT_STATUS),
+    ExpectedPatientsCompoundDto(patient_id=2, disease_id=consts.DEFAULT_PATIENT_STATUS)
 )
 
 # несколько пациентов с различными статусами болезней (половина статусов)

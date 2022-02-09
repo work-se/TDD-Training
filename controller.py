@@ -4,10 +4,11 @@ from typing import Optional
 
 from console import Console
 from hospital import Hospital
-from patient import Patient
 
 
 class InterfaceController:
+    PATIENT_STATUS = 1
+    USERS_COUNT = 200
 
     def __init__(self,):
         self.hospital = Hospital()
@@ -15,32 +16,31 @@ class InterfaceController:
         self.console = Console()
         
     def init_patients(self,):
-        for i in range(consts.DEFAULT_USERS_COUNT):
-            self.hospital.add_patient()
+        for i in range(self.USERS_COUNT):
+            self.hospital.add_patient(self.PATIENT_STATUS)
 
-    def _get_user_input(self, text: str = consts.INPUT_COMMAND_TEXT) -> str:
+    def _get_user_input(self, text: str = "Введите команду: ") -> str:
         return self.console.get_input(text)
     
-    def _get_patient(self) -> Optional[Patient]:
-        patient_id_raw = self._get_user_input(consts.INPUT_PATIENT_ID_COMMAND_TEXT)
+    def _get_patient_id(self) -> Optional[int]:
+        patient_id_raw = self._get_user_input("Введите ID пациента: ")
         try:
-            patient_id = int(patient_id_raw)
-            return self.hospital.patients[patient_id]
+            return int(patient_id_raw)
         except Exception:
-            self.console.put_output(consts.PATIENT_ID_INPUT_TEXT)
+            self.console.put_output("Ошибка ввода. ID пациента должно быть числом (целым, положительным)")
     
     def _exec_patient_command(self, command):
-        patient = self._get_patient()
-        if patient is None:
+        patient_id = self._get_patient_id()
+        if patient_id is None:
             return
         if command in consts.DECREASE_PATIENT_STAT_CMDS:
-            patient.decrease_disease_status()
-            self.console.put_output(f"Новый статус пациента: {patient.get_disease_status().disease_name}")
+            self.hospital.decrease_patient_status(patient_id)
+            self.console.put_output(f"Новый статус пациента: {self.hospital.get_patient_status_name(patient_id)}")
         elif command in consts.INCREASE_PATIENT_STAT_CMDS:
-            patient.increase_disease_status()
-            self.console.put_output(f"Новый статус пациента: {patient.get_disease_status().disease_name}")
+            self.hospital.increase_patient_status(patient_id)
+            self.console.put_output(f"Новый статус пациента: {self.hospital.get_patient_status_name(patient_id)}")
         else:
-            self.console.put_output(f"Статус пациента: {patient.get_disease_status().disease_name}")
+            self.console.put_output(f"Статус пациента: {self.hospital.get_patient_status_name(patient_id)}")
 
     def exec_command(self):
         command = self._get_user_input()
@@ -62,16 +62,17 @@ class InterfaceController:
             self.console.put_output("Сеанс завершён.")
             exit()
         elif command in consts.DECREASE_PATIENT_STAT_CMDS:
-            patient = self._get_patient()
-            patient.decrease_disease_status()
-            self.console.put_output(f"Новый статус пациента: {patient.get_disease_status().disease_name}")
+            patient_id = self._get_patient_id()
+            self.hospital.decrease_patient_status(patient_id)
+            self.console.put_output(f"Новый статус пациента: {self.hospital.get_patient_status_name(patient_id)}")
         elif command in consts.INCREASE_PATIENT_STAT_CMDS:
-            patient = self._get_patient()
-            patient.increase_disease_status()
-            self.console.put_output(f"Новый статус пациента: {patient.get_disease_status().disease_name}")
+            patient_id = self._get_patient_id()
+            self.hospital.increase_patient_status(patient_id)
+            self.console.put_output(f"Новый статус пациента: {self.hospital.get_patient_status_name(patient_id)}")
         elif command in consts.GET_PATIENT_STAT_CMDS:
-            patient = self._get_patient()
-            self.console.put_output(f"Статус пациента: {patient.get_disease_status().disease_name}")
+            patient_id = self._get_patient_id()
+            self.hospital.increase_patient_status(patient_id)
+            self.console.put_output(f"Новый статус пациента: {self.hospital.get_patient_status_name(patient_id)}")
         else:
             self.console.put_output("Неизвестная команда! Попробуйте ещё раз.")
             
@@ -80,8 +81,5 @@ class InterfaceController:
         stat_to_print = list(
             filter(lambda stat: stat.patients_count > 0, self.hospital.get_statistics())
         )
-        if not stat_to_print:
-            self.console.put_output("Всем похорошело, пациентов нет!")
-            return
         for stat in stat_to_print:
-            self.console.put_output(f'- в статусе "{stat.disease}": {stat.patients_count} чел.')
+            self.console.put_output(f'- в статусе "{stat.status_name}": {stat.patients_count} чел.')

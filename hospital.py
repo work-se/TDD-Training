@@ -1,6 +1,5 @@
-from typing import Dict, List
+from typing import Dict, List, Iterable
 
-import consts
 from dtos.statistics_dto import StatisticsDto
 from patient import Patient
 
@@ -13,9 +12,16 @@ class Hospital:
         3: "Готов к выписке"
     }
     
-    def __init__(self,):
-        self.patients: Dict[int, Patient] = {}
-        self.patients_number = 0
+    def __init__(self, patients: Iterable[Patient] = None):
+        self.patients: Dict[int, Patient] = {} if patients is None else self.form_patients_dict(patients)
+        self.patients_number = len(self.patients)
+
+    @staticmethod
+    def form_patients_dict(patients: Iterable[Patient]):
+        return {
+            patient.patient_id: patient
+            for patient in patients
+        }
     
     def add_patient(self, status: int) -> Patient:
         self.patients_number += 1

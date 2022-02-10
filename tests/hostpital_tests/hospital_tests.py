@@ -1,38 +1,68 @@
 import pytest
 
 from hospital import Hospital
-from tests.hostpital_tests import test_consts
+from patient import Patient
 
 
-def test_hospital_creation(hospital: Hospital, base_check_hospital):
-    base_check_hospital(hospital)
+def test_hospital_creation():
+    hospital = Hospital()
+    assert hospital.patients_number == 0, "Неверное количество пациентов"
+    assert len(hospital.patients) == 0, "Количество объектов пациентов не совпадает со счетчиком пациентов"
+
+
+def test_add_patients_to_hospital():
+    statuses = [0, 1, 2, 3, 0, 1]
+    hospital = Hospital()
+
+    for status in statuses:
+        hospital.add_patient(status=status)
+
+    assert hospital.patients_number == len(statuses), "Неверное значение счетчика пациентов после создания"
+    assert len(hospital.patients) == len(statuses), "Неверное количество пациентов после создания"
+
+    patients = sorted(hospital.patients.values(), key=lambda item: item.patient_id)
+    for patient, status in zip(patients, statuses):
+        assert patient.status == status, "Неверный статус у созданного пользователя"
 
 
 @pytest.mark.parametrize(
-    "patients",
-    (
-        test_consts.PATIENTS_TUPLE_1, test_consts.PATIENTS_TUPLE_2,
-        test_consts.PATIENTS_TUPLE_3, test_consts.PATIENTS_TUPLE_4
-    )
+    "patients,expected_statistics",
+    [
+        # несколько пациентов с одним статусом
+        (
+            (Patient(patient_id=1, status=1), Patient(patient_id=2, status=1)),
+            {"Тяжело болен": 0, "Болен": 2, "Слегка болен": 0, "Готов к выписке": 0}
+        ),
+        # несколько пациентов с различными статусами (половина статусов)
+        (
+            (Patient(patient_id=1, status=1), Patient(patient_id=2, status=2)),
+            {"Тяжело болен": 0, "Болен": 1, "Слегка болен": 1, "Готов к выписке": 0}
+        ),
+        # несколько пациентов с различными статусами и статусы повторяются
+        (
+            (
+                Patient(patient_id=1, status=0), Patient(patient_id=2, status=3),
+                Patient(patient_id=3, status=0), Patient(patient_id=4, status=3)
+            ),
+            {"Тяжело болен": 2, "Болен": 0, "Слегка болен": 0, "Готов к выписке": 2}
+        ),
+        # пациенты со всеми возможными статусами болезней
+        (
+            (
+                Patient(patient_id=1, status=0), Patient(patient_id=2, status=0),
+                Patient(patient_id=3, status=1), Patient(patient_id=4, status=2),
+                Patient(patient_id=5, status=3)
+            ),
+            {"Тяжело болен": 2, "Болен": 1, "Слегка болен": 1, "Готов к выписке": 1}
+        ),
+    ]
 )
-def test_add_patient_to_hospital(
-    get_hospital_with_patients, base_check_hospital, check_patients_in_hospital, patients
-):
-    hospital = get_hospital_with_patients(patients)
-    base_check_hospital(hospital, expected_patients_number=len(patients))
-    check_patients_in_hospital(hospital, patients)
+def test_statistics_info(patients, expected_statistics):
+    hospital = Hospital(patients)
+    statistics = hospital.get_statistics()
+    assert set([statistic.status_name for statistic in statistics]) == set(expected_statistics.keys()), \
+        "В статистике отражены не все статусы болезней"
 
-
-@pytest.mark.parametrize(
-    "patients",
-    (
-        test_consts.PATIENTS_TUPLE_1, test_consts.PATIENTS_TUPLE_2,
-        test_consts.PATIENTS_TUPLE_3, test_consts.PATIENTS_TUPLE_4
-    )
-)
-def test_statistics_info(
-    get_hospital_with_patients, check_statistics, patients
-):
-    hospital = get_hospital_with_patients(patients)
-    check_statistics(hospital, patients)
-
+    for statistic_element in statistics:
+        assert expected_statistics[statistic_element.status_name] == statistic_element.patients_count, \
+            f"Неверное количество пациентов в статистике для болезни {statistic_element.status_name}"

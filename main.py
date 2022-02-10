@@ -8,5 +8,4 @@ controller = InterfaceController()
 
 if __name__ == "__main__":
     print("______________________")
-    while True:
-        controller.exec_command()
+    controller.exec_command()

@@ -1,11 +1,25 @@
+from abc import ABC, abstractmethod
 
 
-class Console:
+class AbstractConsole(ABC):
 
     @staticmethod
-    def get_input(text: str) -> str:
+    @abstractmethod
+    def input(text: str) -> str:
+        ...
+
+    @staticmethod
+    @abstractmethod
+    def print(text: str):
+        ...
+
+
+class Console(AbstractConsole):
+
+    @staticmethod
+    def input(text: str) -> str:
         return input(text)
 
     @staticmethod
-    def put_output(text: str):
+    def print(text: str):
         print(text)

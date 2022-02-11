@@ -1,12 +1,12 @@
 import pytest
 
-from hospital import Hospital
+from hospital import Hospital, PatientDoesNotExists, PatientAlreadyWithMaxStatus, PatientAlreadyWithMinStatus
 from patient import Patient
 
 
 def test_hospital_creation():
     hospital = Hospital()
-    assert hospital._patients_number == 0, "Неверное количество пациентов"
+    assert hospital._patients_index == 0, "Неверное количество пациентов"
     assert len(hospital._patients) == 0, "Количество объектов пациентов не совпадает со счетчиком пациентов"
 
 
@@ -17,7 +17,7 @@ def test_add_patients_to_hospital():
     for status in statuses:
         hospital.add_patient(status=status)
 
-    assert hospital._patients_number == len(statuses), "Неверное значение счетчика пациентов после создания"
+    assert hospital._patients_index == len(statuses), "Неверное значение счетчика пациентов после создания"
     assert len(hospital._patients) == len(statuses), "Неверное количество пациентов после создания"
 
     patients = sorted(hospital._patients.values(), key=lambda item: item.patient_id)
@@ -35,14 +35,48 @@ def test_increase_patient_status(hospital_with_patient):
     assert hospital_with_patient._patients[1].status == 2, "Неверный статус у пациента после увеличения"
 
 
+def test_increase_non_existent_patient_status():
+    hospital = Hospital()
+    with pytest.raises(PatientDoesNotExists):
+        hospital.increase_patient_status(patient_id=1)
+
+
+def test_increase_minimum_status():
+    hospital = Hospital(patients=[Patient(patient_id=1, status=3)])
+
+    with pytest.raises(PatientAlreadyWithMaxStatus) as exception:
+        hospital.increase_patient_status(patient_id=1)
+    assert "Пациент уже с максимальным статусом" in str(exception.value)
+
+
 def test_decrease_patient_status(hospital_with_patient):
     hospital_with_patient.decrease_patient_status(patient_id=1)
-    assert hospital_with_patient._patients[1].status == 0, "Неверный статус у пациента после увеличения"
+    assert hospital_with_patient._patients[1].status == 0, "Неверный статус у пациента после уменьшения"
+
+
+def test_decrease_non_existent_patient_status():
+    hospital = Hospital()
+    with pytest.raises(PatientDoesNotExists):
+        hospital.decrease_patient_status(patient_id=1)
+
+
+def test_decrease_minimum_status():
+    hospital = Hospital(patients=[Patient(patient_id=1, status=0)])
+
+    with pytest.raises(PatientAlreadyWithMinStatus) as exception:
+        hospital.decrease_patient_status(patient_id=1)
+    assert "Пациент уже с минимальным статусом" in str(exception.value)
 
 
 def test_get_patient_status(hospital_with_patient):
-    hospital_with_patient.decrease_patient_status(patient_id=1)
-    assert hospital_with_patient._patients[1].status == 0, "Неверный статус у пациента после увеличения"
+    status_name = hospital_with_patient.get_patient_status_name(patient_id=1)
+    assert status_name == "Болен", "Неверный статус у пациента после увеличения"
+
+
+def test_get_non_existent_patient_status():
+    hospital = Hospital()
+    with pytest.raises(PatientDoesNotExists):
+        hospital.get_patient_status_name(patient_id=1)
 
 
 @pytest.mark.parametrize(
@@ -86,3 +120,35 @@ def test_statistics_info(patients, expected_statistics):
     for statistic_element in statistics:
         assert expected_statistics[statistic_element.status_name] == statistic_element.patients_count, \
             f"Неверное количество пациентов в статистике для болезни {statistic_element.status_name}"
+
+
+def test_get_patient():
+    hospital = Hospital(patients=[Patient(patient_id=1, status=1)])
+
+    try:
+        patient = hospital._get_patient(1)
+    except PatientDoesNotExists:
+        assert False, "Ложное срабатывание проверки на существующего пользователя"
+
+    assert patient.patient_id == 1, "Получен неверный пользователь по id"
+
+
+def test_check_patient_does_not_exists():
+    hospital = Hospital(patients=[Patient(patient_id=1, status=1)])
+
+    with pytest.raises(PatientDoesNotExists) as exception:
+        hospital._get_patient(2)
+    assert f"Пациента с id {2} нет в больнице!" in str(exception.value), "Неожиданный вывод в ошибке"
+
+
+def test_discharge_patient():
+    hospital = Hospital(patients=[Patient(patient_id=1, status=1)])
+    hospital.discharge_patient(1)
+
+    assert hospital._patients.get(1) is None, "После выписки пациент остался в больнице"
+
+
+def test_discharge_non_existed_patient():
+    hospital = Hospital()
+    with pytest.raises(PatientDoesNotExists):
+        hospital.discharge_patient(1)

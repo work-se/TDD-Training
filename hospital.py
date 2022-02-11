@@ -4,6 +4,24 @@ from dtos.statistics_dto import StatisticsDto
 from patient import Patient
 
 
+class PatientDoesNotExists(Exception):
+
+    def __init__(self, patient_id: int):
+        super().__init__(f"Пациента с id {patient_id} нет в больнице!")
+
+
+class PatientAlreadyWithMaxStatus(Exception):
+
+    def __init__(self):
+        super().__init__("Пациент уже с максимальным статусом")
+
+
+class PatientAlreadyWithMinStatus(Exception):
+
+    def __init__(self):
+        super().__init__("Пациент уже с минимальным статусом")
+
+
 class Hospital:
     PATIENT_STATUSES = {
         0: "Тяжело болен",
@@ -11,10 +29,12 @@ class Hospital:
         2: "Слегка болен",
         3: "Готов к выписке"
     }
+    MIN_STATUS = min(PATIENT_STATUSES.keys())
+    MAX_STATUS = max(PATIENT_STATUSES.keys())
     
     def __init__(self, patients: Iterable[Patient] = None):
         self._patients: Dict[int, Patient] = {} if patients is None else self._form_patients_dict(patients)
-        self._patients_number = len(self._patients)
+        self._patients_index = len(self._patients)
 
     @staticmethod
     def _form_patients_dict(patients: Iterable[Patient]):
@@ -24,19 +44,36 @@ class Hospital:
         }
     
     def add_patient(self, status: int) -> Patient:
-        self._patients_number += 1
-        new_patient = Patient(self._patients_number, status)
-        self._patients[self._patients_number] = new_patient
+        self._patients_index += 1
+        new_patient = Patient(self._patients_index, status)
+        self._patients[self._patients_index] = new_patient
         return new_patient
 
+    def _get_patient(self, patient_id: int) -> Patient:
+        patient = self._patients.get(patient_id)
+        if patient is None:
+            raise PatientDoesNotExists(patient_id)
+        return patient
+
+    def discharge_patient(self, patient_id: int):
+        self._get_patient(patient_id)
+        del self._patients[patient_id]
+
     def increase_patient_status(self, patient_id: int):
-        self._patients[patient_id].increase_status()
+        patient = self._get_patient(patient_id)
+        if patient.status == self.MAX_STATUS:
+            raise PatientAlreadyWithMaxStatus
+        patient.increase_status()
 
     def decrease_patient_status(self, patient_id: int):
-        self._patients[patient_id].decrease_status()
+        patient = self._get_patient(patient_id)
+        if patient.status == self.MIN_STATUS:
+            raise PatientAlreadyWithMinStatus
+        patient.decrease_status()
 
     def get_patient_status_name(self, patient_id: int) -> str:
-        status = self._patients[patient_id].get_status()
+        patient = self._get_patient(patient_id)
+        status = patient.get_status()
         return self.PATIENT_STATUSES[status]
     
     def get_statistics(self,) -> List[StatisticsDto]:
@@ -53,7 +90,7 @@ class Hospital:
         ]
 
     def __repr__(self):
-        return f"[Hospital] (patients num={self._patients_number}, patients={self._patients})"
+        return f"[Hospital] (patients num={self._patients_index}, patients={self._patients})"
 
     def __str__(self):
-        return f"[Hospital] (patients num={self._patients_number}, patients={self._patients})"
+        return f"[Hospital] (patients num={self._patients_index}, patients={self._patients})"

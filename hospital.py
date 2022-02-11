@@ -13,30 +13,30 @@ class Hospital:
     }
     
     def __init__(self, patients: Iterable[Patient] = None):
-        self.patients: Dict[int, Patient] = {} if patients is None else self.form_patients_dict(patients)
-        self.patients_number = len(self.patients)
+        self._patients: Dict[int, Patient] = {} if patients is None else self._form_patients_dict(patients)
+        self._patients_number = len(self._patients)
 
     @staticmethod
-    def form_patients_dict(patients: Iterable[Patient]):
+    def _form_patients_dict(patients: Iterable[Patient]):
         return {
             patient.patient_id: patient
             for patient in patients
         }
     
     def add_patient(self, status: int) -> Patient:
-        self.patients_number += 1
-        new_patient = Patient(self.patients_number, status)
-        self.patients[self.patients_number] = new_patient
+        self._patients_number += 1
+        new_patient = Patient(self._patients_number, status)
+        self._patients[self._patients_number] = new_patient
         return new_patient
 
     def increase_patient_status(self, patient_id: int):
-        self.patients[patient_id].increase_status()
+        self._patients[patient_id].increase_status()
 
     def decrease_patient_status(self, patient_id: int):
-        self.patients[patient_id].decrease_status()
+        self._patients[patient_id].decrease_status()
 
     def get_patient_status_name(self, patient_id: int) -> str:
-        status = self.patients[patient_id].get_status()
+        status = self._patients[patient_id].get_status()
         return self.PATIENT_STATUSES[status]
     
     def get_statistics(self,) -> List[StatisticsDto]:
@@ -45,7 +45,7 @@ class Hospital:
                 status_name=status_name,
                 patients_count=len(
                     list(
-                        filter(lambda patient: patient.get_status() == status, self.patients.values())
+                        filter(lambda patient: patient.get_status() == status, self._patients.values())
                     )
                 )
             )
@@ -53,7 +53,7 @@ class Hospital:
         ]
 
     def __repr__(self):
-        return f"[Hospital] (patients num={self.patients_number}, patients={self.patients})"
+        return f"[Hospital] (patients num={self._patients_number}, patients={self._patients})"
 
     def __str__(self):
-        return f"[Hospital] (patients num={self.patients_number}, patients={self.patients})"
+        return f"[Hospital] (patients num={self._patients_number}, patients={self._patients})"

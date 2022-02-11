@@ -6,8 +6,8 @@ from patient import Patient
 
 def test_hospital_creation():
     hospital = Hospital()
-    assert hospital.patients_number == 0, "Неверное количество пациентов"
-    assert len(hospital.patients) == 0, "Количество объектов пациентов не совпадает со счетчиком пациентов"
+    assert hospital._patients_number == 0, "Неверное количество пациентов"
+    assert len(hospital._patients) == 0, "Количество объектов пациентов не совпадает со счетчиком пациентов"
 
 
 def test_add_patients_to_hospital():
@@ -17,12 +17,32 @@ def test_add_patients_to_hospital():
     for status in statuses:
         hospital.add_patient(status=status)
 
-    assert hospital.patients_number == len(statuses), "Неверное значение счетчика пациентов после создания"
-    assert len(hospital.patients) == len(statuses), "Неверное количество пациентов после создания"
+    assert hospital._patients_number == len(statuses), "Неверное значение счетчика пациентов после создания"
+    assert len(hospital._patients) == len(statuses), "Неверное количество пациентов после создания"
 
-    patients = sorted(hospital.patients.values(), key=lambda item: item.patient_id)
+    patients = sorted(hospital._patients.values(), key=lambda item: item.patient_id)
     for patient, status in zip(patients, statuses):
         assert patient.status == status, "Неверный статус у созданного пользователя"
+
+
+@pytest.fixture
+def hospital_with_patient() -> Hospital:
+    return Hospital(patients=[Patient(patient_id=1, status=1)])
+
+
+def test_increase_patient_status(hospital_with_patient):
+    hospital_with_patient.increase_patient_status(patient_id=1)
+    assert hospital_with_patient._patients[1].status == 2, "Неверный статус у пациента после увеличения"
+
+
+def test_decrease_patient_status(hospital_with_patient):
+    hospital_with_patient.decrease_patient_status(patient_id=1)
+    assert hospital_with_patient._patients[1].status == 0, "Неверный статус у пациента после увеличения"
+
+
+def test_get_patient_status(hospital_with_patient):
+    hospital_with_patient.decrease_patient_status(patient_id=1)
+    assert hospital_with_patient._patients[1].status == 0, "Неверный статус у пациента после увеличения"
 
 
 @pytest.mark.parametrize(

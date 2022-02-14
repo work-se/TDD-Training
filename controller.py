@@ -3,7 +3,18 @@ import consts
 from typing import Optional
 
 from console import Console, AbstractConsole
-from hospital import Hospital
+from hospital import Hospital, PatientDoesNotExists, PatientAlreadyWithMinStatus, PatientAlreadyWithMaxStatus
+
+
+def catch_patient_does_not_exists(func):
+    def wrapper(*args, **kwargs):
+        self = args[0]
+        try:
+            return func(*args, **kwargs)
+        except PatientDoesNotExists:
+            self._console.print("Ошибка. В больнице нет пациента с таким ID")
+
+    return wrapper
 
 
 class InterfaceController:
@@ -29,19 +40,48 @@ class InterfaceController:
             return int(patient_id_raw)
         except ValueError:
             self._console.print("Ошибка ввода. ID пациента должно быть числом (целым, положительным)")
+
+    @catch_patient_does_not_exists
+    def _decrease_patient_status(self, patient_id: int):
+        try:
+            self._hospital.decrease_patient_status(patient_id=patient_id)
+            self._console.print(f"Новый статус пациента: {self._hospital.get_patient_status_name(patient_id)}")
+        except PatientAlreadyWithMinStatus:
+            self._console.print("Ошибка. Нельзя понизить самый низкий статус (наши пациенты не умирают)")
+
+    def _discharge_patient(self, patient_id: int):
+        discharge_patient_answer = self._get_user_input("Желаете этого пациента выписать? (да/нет)")
+        if discharge_patient_answer == "да":
+            self._hospital.discharge_patient(patient_id)
+            self._console.print("Пациент выписан из больницы")
+            return
+
+        status = self._hospital.get_patient_status_name(patient_id)
+        self._console.print(f'Пациент остался в статусе "{status}"')
+
+    @catch_patient_does_not_exists
+    def _increase_patient_status(self, patient_id: int):
+        try:
+            self._hospital.increase_patient_status(patient_id)
+            self._console.print(f"Новый статус пациента: {self._hospital.get_patient_status_name(patient_id)}")
+        except PatientAlreadyWithMaxStatus:
+            self._discharge_patient(patient_id)
+
+    @catch_patient_does_not_exists
+    def _get_patient_status(self, patient_id: int):
+        status = self._hospital.get_patient_status_name(patient_id)
+        self._console.print(f"Статус пациента: {status}")
     
     def _exec_patient_command(self, command):
         patient_id = self._get_patient_id()
         if patient_id is None:
             return
         if command in consts.DECREASE_PATIENT_STAT_CMDS:
-            self._hospital.decrease_patient_status(patient_id)
-            self._console.print(f"Новый статус пациента: {self._hospital.get_patient_status_name(patient_id)}")
+            self._decrease_patient_status(patient_id)
         elif command in consts.INCREASE_PATIENT_STAT_CMDS:
-            self._hospital.increase_patient_status(patient_id)
-            self._console.print(f"Новый статус пациента: {self._hospital.get_patient_status_name(patient_id)}")
+            self._increase_patient_status(patient_id)
         else:
-            self._console.print(f"Статус пациента: {self._hospital.get_patient_status_name(patient_id)}")
+            self._get_patient_status(patient_id)
 
     def exec_command(self):
         while True:
@@ -53,29 +93,6 @@ class InterfaceController:
                 break
             elif command in consts.PATIENT_CMDS:
                 self._exec_patient_command(command)
-            else:
-                self._console.print("Неизвестная команда! Попробуйте ещё раз.")
-
-    def exec_command_v2(self):
-        while True:
-            command = self._get_user_input()
-            if command in consts.STAT_CMDS:
-                self.print_statistics()
-            elif command in consts.STOP_CMDS:
-                self._console.print("Сеанс завершён.")
-                break
-            elif command in consts.DECREASE_PATIENT_STAT_CMDS:
-                patient_id = self._get_patient_id()
-                self._hospital.decrease_patient_status(patient_id)
-                self._console.print(f"Новый статус пациента: {self._hospital.get_patient_status_name(patient_id)}")
-            elif command in consts.INCREASE_PATIENT_STAT_CMDS:
-                patient_id = self._get_patient_id()
-                self._hospital.increase_patient_status(patient_id)
-                self._console.print(f"Новый статус пациента: {self._hospital.get_patient_status_name(patient_id)}")
-            elif command in consts.GET_PATIENT_STAT_CMDS:
-                patient_id = self._get_patient_id()
-                self._hospital.increase_patient_status(patient_id)
-                self._console.print(f"Новый статус пациента: {self._hospital.get_patient_status_name(patient_id)}")
             else:
                 self._console.print("Неизвестная команда! Попробуйте ещё раз.")
             

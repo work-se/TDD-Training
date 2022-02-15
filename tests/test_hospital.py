@@ -65,7 +65,7 @@ def test_decrease_minimum_status():
 
     with pytest.raises(PatientAlreadyWithMinStatus) as exception:
         hospital.decrease_patient_status(patient_id=1)
-    assert "Пациент уже с минимальным статусом" in str(exception.value)
+    assert "Ошибка. Нельзя понизить самый низкий статус (наши пациенты не умирают)" == str(exception.value)
 
 
 def test_get_patient_status(hospital_with_patient):
@@ -138,7 +138,7 @@ def test_check_patient_does_not_exists():
 
     with pytest.raises(PatientDoesNotExists) as exception:
         hospital._get_patient(2)
-    assert f"Пациента с id {2} нет в больнице!" in str(exception.value), "Неожиданный вывод в ошибке"
+    assert "Ошибка. В больнице нет пациента с таким ID" == str(exception.value), "Неожиданный вывод в ошибке"
 
 
 def test_discharge_patient():

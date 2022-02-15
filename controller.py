@@ -11,8 +11,8 @@ def catch_patient_does_not_exists(func):
         self = args[0]
         try:
             return func(*args, **kwargs)
-        except PatientDoesNotExists:
-            self._console.print("Ошибка. В больнице нет пациента с таким ID")
+        except PatientDoesNotExists as exception:
+            self._console.print(str(exception))
 
     return wrapper
 
@@ -30,12 +30,9 @@ class InterfaceController:
         for i in range(self.USERS_COUNT):
             hospital.add_patient(self.PATIENT_STATUS)
         return hospital
-
-    def _get_user_input(self, text: str = "Введите команду: ") -> str:
-        return self._console.input(text)
     
     def _get_patient_id(self) -> Optional[int]:
-        patient_id_raw = self._get_user_input("Введите ID пациента: ")
+        patient_id_raw = self._console.input("Введите ID пациента: ")
         try:
             return int(patient_id_raw)
         except ValueError:
@@ -50,7 +47,7 @@ class InterfaceController:
             self._console.print("Ошибка. Нельзя понизить самый низкий статус (наши пациенты не умирают)")
 
     def _discharge_patient(self, patient_id: int):
-        discharge_patient_answer = self._get_user_input("Желаете этого пациента выписать? (да/нет)")
+        discharge_patient_answer = self._console.input("Желаете этого пациента выписать? (да/нет)")
         if discharge_patient_answer == "да":
             self._hospital.discharge_patient(patient_id)
             self._console.print("Пациент выписан из больницы")
@@ -85,7 +82,7 @@ class InterfaceController:
 
     def exec_command(self):
         while True:
-            command = self._get_user_input()
+            command = self._console.input("Введите команду: ")
             if command in consts.STAT_CMDS:
                 self.print_statistics()
             elif command in consts.STOP_CMDS:

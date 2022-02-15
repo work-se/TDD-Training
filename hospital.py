@@ -6,8 +6,8 @@ from patient import Patient
 
 class PatientDoesNotExists(Exception):
 
-    def __init__(self, patient_id: int):
-        super().__init__(f"Пациента с id {patient_id} нет в больнице!")
+    def __init__(self):
+        super().__init__("Ошибка. В больнице нет пациента с таким ID")
 
 
 class PatientAlreadyWithMaxStatus(Exception):
@@ -19,7 +19,7 @@ class PatientAlreadyWithMaxStatus(Exception):
 class PatientAlreadyWithMinStatus(Exception):
 
     def __init__(self):
-        super().__init__("Пациент уже с минимальным статусом")
+        super().__init__("Ошибка. Нельзя понизить самый низкий статус (наши пациенты не умирают)")
 
 
 class Hospital:
@@ -52,7 +52,7 @@ class Hospital:
     def _get_patient(self, patient_id: int) -> Patient:
         patient = self._patients.get(patient_id)
         if patient is None:
-            raise PatientDoesNotExists(patient_id)
+            raise PatientDoesNotExists()
         return patient
 
     def discharge_patient(self, patient_id: int):

@@ -3,6 +3,7 @@ import consts
 from typing import Optional
 
 from console import Console, AbstractConsole
+from communications_controller import CommunicationsController, CommandTypes
 from hospital import Hospital, PatientDoesNotExists, PatientAlreadyWithMinStatus, PatientAlreadyWithMaxStatus
 
 
@@ -21,9 +22,12 @@ class InterfaceController:
     PATIENT_STATUS = 1
     USERS_COUNT = 200
 
-    def __init__(self, console: AbstractConsole = None, hospital: Hospital = None):
+    def __init__(
+        self, console: AbstractConsole = None, hospital: Hospital = None,
+    ):
         self._hospital = self._get_hospital() if hospital is None else hospital
         self._console = Console() if console is None else console
+        self._communication_controller = CommunicationsController(self._console)
         
     def _get_hospital(self):
         hospital = Hospital()
@@ -73,25 +77,25 @@ class InterfaceController:
         patient_id = self._get_patient_id()
         if patient_id is None:
             return
-        if command in consts.DECREASE_PATIENT_STAT_CMDS:
+        if command == CommandTypes.DECREASE_PATIENT_STAT:
             self._decrease_patient_status(patient_id)
-        elif command in consts.INCREASE_PATIENT_STAT_CMDS:
+        elif command == CommandTypes.INCREASE_PATIENT_STAT:
             self._increase_patient_status(patient_id)
         else:
             self._get_patient_status(patient_id)
 
     def exec_command(self):
         while True:
-            command = self._console.input("Введите команду: ")
-            if command in consts.STAT_CMDS:
+            command = self._communication_controller.get_command()
+            if command in (
+                CommandTypes.GET_PATIENT_STAT, CommandTypes.INCREASE_PATIENT_STAT, CommandTypes.DECREASE_PATIENT_STAT
+            ):
+                self._exec_patient_command(command)
+            elif command == CommandTypes.CALCULATE_STAT:
                 self.print_statistics()
-            elif command in consts.STOP_CMDS:
+            elif command == CommandTypes.STOP:
                 self._console.print("Сеанс завершён.")
                 break
-            elif command in consts.PATIENT_CMDS:
-                self._exec_patient_command(command)
-            else:
-                self._console.print("Неизвестная команда! Попробуйте ещё раз.")
             
     def print_statistics(self,):
         # не выводим статистику по статусам болезни, на которых нет пациентов

@@ -1,7 +1,14 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, Iterable
 
 from console import Console
+from dtos.statistics_dto import StatisticsDto
+
+
+class ReceivedInvalidId(Exception):
+
+    def __init__(self):
+        super().__init__("Получен неверный id")
 
 
 class CommandTypes(Enum):
@@ -35,8 +42,22 @@ class CommunicationsController:
     def print_current_patient_status(self, status: str):
         self._console.print(f"Статус пациента: {status}")
 
+    def print_patient_status_not_changed(self, status: str):
+        self._console.print(f'Пациент остался в статусе "{status}"')
+
     def print_end_session(self):
         self._console.print("Сеанс завершён.")
+
+    def print_hospital_statistics(self, statuses_info: Iterable[StatisticsDto]):
+        self._console.print("Статистика по статусам:")
+        for status_info in statuses_info:
+            self._console.print(f'- в статусе "{status_info.status_name}": {status_info.patients_count} чел.')
+
+    def print_patients_cant_die(self):
+        self._console.print("Ошибка. Нельзя понизить самый низкий статус (наши пациенты не умирают)")
+
+    def print_patient_discharged(self):
+        self._console.print("Пациент выписан из больницы")
 
     def get_command(self) -> Optional[CommandTypes]:
         command = self._console.input("Введите команду: ")
@@ -51,6 +72,7 @@ class CommunicationsController:
             return int(patient_id_raw)
         except ValueError:
             self._console.print("Ошибка ввода. ID пациента должно быть числом (целым, положительным)")
+            raise ReceivedInvalidId()
 
     def ask_confirm_discharge_patient(self) -> bool:
         answer = self._console.input("Желаете этого пациента выписать? (да/нет)")

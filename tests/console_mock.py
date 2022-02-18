@@ -46,3 +46,13 @@ class ConsoleMock(AbstractConsole):
         expected_text = self._get_current_print_mock()
         logger.debug("expected_text={}", expected_text)
         assert text == expected_text, "Неверный текст выводится в консоль"
+
+    def check_all_mocks_used(self):
+        assert len(self.expected_input_mock_list) == 0, "Использованы не все ожидаемые моки ввода"
+        assert len(self.expected_print_mock_list) == 0, "Использованы не все ожидаемые моки вывода"
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.check_all_mocks_used()

@@ -32,6 +32,7 @@ def test_complex_script_iteration_1_num_1():
     console_mock.add_expected_print("Сеанс завершён.")
 
     interface_controller.exec_command()
+    console_mock.check_all_mocks_used()
 
 
 def test_complex_script_iteration_2_num_1():
@@ -65,6 +66,7 @@ def test_complex_script_iteration_2_num_1():
     console_mock.add_expected_print("Сеанс завершён.")
 
     interface_controller.exec_command()
+    console_mock.check_all_mocks_used()
 
 
 def test_complex_script_iteration_2_num_2():
@@ -99,6 +101,7 @@ def test_complex_script_iteration_2_num_2():
     console_mock.add_expected_print("Сеанс завершён.")
 
     interface_controller.exec_command()
+    console_mock.check_all_mocks_used()
 
 
 def test_complex_script_iteration_2_num_3():
@@ -132,6 +135,7 @@ def test_complex_script_iteration_2_num_3():
     console_mock.add_expected_print("Сеанс завершён.")
 
     interface_controller.exec_command()
+    console_mock.check_all_mocks_used()
 
 
 def test_complex_script_iteration_2_num_4():
@@ -156,3 +160,4 @@ def test_complex_script_iteration_2_num_4():
     console_mock.add_expected_print("Сеанс завершён.")
 
     interface_controller.exec_command()
+    console_mock.check_all_mocks_used()

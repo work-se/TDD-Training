@@ -17,6 +17,7 @@ def test_wrong_command_input():
     console_mock.add_expected_print("Сеанс завершён.")
 
     interface_controller.exec_command()
+    console_mock.check_all_mocks_used()
 
 
 @pytest.mark.parametrize(
@@ -29,6 +30,7 @@ def test_stop_command(command):
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input=command)
     console_mock.add_expected_print(print_text="Сеанс завершён.")
     interface_controller.exec_command()
+    console_mock.check_all_mocks_used()
 
 
 @pytest.mark.parametrize(
@@ -46,6 +48,7 @@ def test_input_wrong_patient_id(wrong_id):
     console_mock.add_expected_print("Сеанс завершён.")
 
     interface_controller.exec_command()
+    console_mock.check_all_mocks_used()
 
 
 @pytest.mark.parametrize(
@@ -64,6 +67,7 @@ def test_access_non_existent_patient(command):
     console_mock.add_expected_print("Сеанс завершён.")
 
     interface_controller.exec_command()
+    console_mock.check_all_mocks_used()
 
 
 @pytest.mark.parametrize(
@@ -84,6 +88,7 @@ def test_decrease_patient_status(command):
 
     patient = interface_controller._hospital._patients[1]
     assert patient.status == 0, "Неверный статус пациента после изменения"
+    console_mock.check_all_mocks_used()
 
 
 @pytest.mark.parametrize(
@@ -102,6 +107,7 @@ def test_decrease_min_patient_status(command):
     console_mock.add_expected_print("Сеанс завершён.")
 
     interface_controller.exec_command()
+    console_mock.check_all_mocks_used()
 
 
 @pytest.mark.parametrize(
@@ -122,6 +128,7 @@ def test_increase_patient_status(command):
 
     patient = interface_controller._hospital._patients[1]
     assert patient.status == 2, "Неверный статус пациента после изменения"
+    console_mock.check_all_mocks_used()
 
 
 @pytest.mark.parametrize(
@@ -145,6 +152,7 @@ def test_increase_max_patient_status(command):
     console_mock.add_expected_print("Сеанс завершён.")
 
     interface_controller.exec_command()
+    console_mock.check_all_mocks_used()
 
 
 @pytest.mark.parametrize(
@@ -168,6 +176,7 @@ def test_increase_max_patient_status_with_discharge(command):
     console_mock.add_expected_print("Сеанс завершён.")
 
     interface_controller.exec_command()
+    console_mock.check_all_mocks_used()
 
 
 @pytest.mark.parametrize(
@@ -185,6 +194,7 @@ def test_get_patient_status(command):
     console_mock.add_expected_print("Сеанс завершён.")
 
     interface_controller.exec_command()
+    console_mock.check_all_mocks_used()
 
 
 @pytest.fixture
@@ -216,6 +226,7 @@ def test_get_all_statuses_statistics(command, hospital_with_all_status_patients)
     console_mock.add_expected_print("Сеанс завершён.")
 
     interface_controller.exec_command()
+    console_mock.check_all_mocks_used()
 
 
 @pytest.fixture
@@ -243,3 +254,4 @@ def test_get_limit_statuses_statistics(command, hospital_with_limit_status_patie
     console_mock.add_expected_print("Сеанс завершён.")
 
     interface_controller.exec_command()
+    console_mock.check_all_mocks_used()

@@ -122,3 +122,26 @@ def test_print_mock_with_error_print_text():
 
     with pytest.raises(AssertionError):
         console_mock.print("test error print")
+
+
+def test_check_all_mocks_used():
+    console_mock = ConsoleMock()
+    console_mock.add_expected_input(expected_text="test text", expected_input="test input")
+    console_mock.add_expected_print(print_text="test print")
+
+    with pytest.raises(AssertionError) as exception:
+        console_mock.check_all_mocks_used()
+    assert "Использованы не все ожидаемые моки ввода" == str(exception.value), \
+        "Неожиданный текст исключения при проверке"
+
+    console_mock.expected_input_mock_list.pop(0)
+    with pytest.raises(AssertionError) as exception:
+        console_mock.check_all_mocks_used()
+    assert "Использованы не все ожидаемые моки вывода" == str(exception.value), \
+        "Неожиданный текст исключения при проверке"
+
+    console_mock.expected_print_mock_list.pop(0)
+    try:
+        console_mock.check_all_mocks_used()
+    except AssertionError:
+        assert False, "Ложное срабатывание проверки использования всех ожидаемых моков"

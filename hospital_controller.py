@@ -1,48 +1,26 @@
 from console import AbstractConsole, Console
-from communications_controller import CommunicationsController, ReceivedInvalidId
+from communications_controller import CommunicationsController
 from hospital import Hospital
-from hospital import PatientDoesNotExists, PatientAlreadyWithMinStatus, PatientAlreadyWithMaxStatus
-
-
-def catch_patient_does_not_exists(func):
-    def wrapper(*args, **kwargs):
-        self = args[0]
-        try:
-            return func(*args, **kwargs)
-        except PatientDoesNotExists as exception:
-            self._console.print(str(exception))
-
-    return wrapper
-
-
-def catch_with_invalid_id(func):
-
-    def wrapper(*args, **kwargs):
-        try:
-            func(*args, **kwargs)
-        except ReceivedInvalidId:
-            pass
-
-    return wrapper
+from hospital import PatientDoesNotExists, PatientAlreadyWithMinStatus
 
 
 class HospitalController:
 
-    def __init__(self, console: AbstractConsole, hospital: Hospital):
-        self._console = console
-        self._hospital = hospital
+    def __init__(self, console: AbstractConsole = None, hospital: Hospital = None):
+        self._console = console if console is not None else Console()
+        self._hospital = hospital if hospital is not None else Hospital()
         self._communication_controller = CommunicationsController(self._console)
 
-    @catch_patient_does_not_exists
-    @catch_with_invalid_id
     def decrease_patient_status(self):
         patient_id = self._communication_controller.get_patient_id()
+        if patient_id is None:
+            return
         try:
-            self._hospital.decrease_patient_status(patient_id=patient_id)
+            self._hospital.decrease_patient_status(patient_id)
             status = self._hospital.get_patient_status_name(patient_id)
             self._communication_controller.print_change_patient_status(status)
-        except PatientAlreadyWithMinStatus:
-            self._communication_controller.print_patients_cant_die()
+        except (PatientAlreadyWithMinStatus, PatientDoesNotExists) as exception:
+            self._communication_controller.print_exception(str(exception))
 
     def _discharge_patient(self, patient_id: int):
         discharge_patient = self._communication_controller.ask_confirm_discharge_patient()
@@ -54,23 +32,29 @@ class HospitalController:
         status = self._hospital.get_patient_status_name(patient_id)
         self._communication_controller.print_patient_status_not_changed(status)
 
-    @catch_patient_does_not_exists
-    @catch_with_invalid_id
     def increase_patient_status(self):
         patient_id = self._communication_controller.get_patient_id()
+        if patient_id is None:
+            return
         try:
+            if not self._hospital.can_increase_patient_status(patient_id):
+                self._discharge_patient(patient_id)
+                return
             self._hospital.increase_patient_status(patient_id)
             status = self._hospital.get_patient_status_name(patient_id)
             self._communication_controller.print_change_patient_status(status)
-        except PatientAlreadyWithMaxStatus:
-            self._discharge_patient(patient_id)
+        except PatientDoesNotExists as exception:
+            self._communication_controller.print_exception(str(exception))
 
-    @catch_patient_does_not_exists
-    @catch_with_invalid_id
     def get_patient_status(self):
         patient_id = self._communication_controller.get_patient_id()
-        status = self._hospital.get_patient_status_name(patient_id)
-        self._communication_controller.print_current_patient_status(status)
+        if patient_id is None:
+            return
+        try:
+            status = self._hospital.get_patient_status_name(patient_id)
+            self._communication_controller.print_current_patient_status(status)
+        except PatientDoesNotExists as exception:
+            self._communication_controller.print_exception(str(exception))
 
     def print_statistics(self,):
         # не выводим статистику по статусам болезни, на которых нет пациентов

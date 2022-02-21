@@ -2,164 +2,214 @@ import pytest
 
 from unittest.mock import MagicMock
 
-from hospital import Hospital
+from hospital import Hospital, PatientAlreadyWithMinStatus, PatientDoesNotExists, StatisticsDto
 from hospital_controller import HospitalController
 from patient import Patient
 from tests.console_mock import ConsoleMock
 
 
 def test_decrease_patient_status():
-    with ConsoleMock() as console_mock:
-        hospital = Hospital(patients=[Patient(patient_id=1, status=1)])
-        hospital_controller = HospitalController(console_mock, hospital)
-        console_mock.add_expected_input(expected_text="Введите ID пациента: ", expected_input="1")
-        console_mock.add_expected_print(print_text='Новый статус пациента: Тяжело болен')
+    hospital_controller = HospitalController()
+    hospital = hospital_controller._hospital
+    communication_controller = hospital_controller._communication_controller
 
-        hospital_controller.decrease_patient_status()
-        patient = hospital_controller._hospital._patients[1]
-        assert patient.status == 0, "Неверный статус пациента после понижения"
+    communication_controller.get_patient_id = MagicMock(return_value=1)
+    hospital.decrease_patient_status = MagicMock()
+    hospital.get_patient_status_name = MagicMock(return_value="Новый статус пациента")
+    communication_controller.print_change_patient_status = MagicMock()
+
+    hospital_controller.decrease_patient_status()
+    communication_controller.get_patient_id.assert_called()
+    hospital.decrease_patient_status.assert_called_with(1)
+    hospital.get_patient_status_name.assert_called_with(1)
+    communication_controller.print_change_patient_status.assert_called_with("Новый статус пациента")
 
 
 def test_decrease_min_patient_status():
-    with ConsoleMock() as console_mock:
-        hospital = Hospital(patients=[Patient(patient_id=1, status=0)])
-        hospital_controller = HospitalController(console_mock, hospital)
-        console_mock.add_expected_input(expected_text="Введите ID пациента: ", expected_input="1")
-        console_mock.add_expected_print(
-            print_text="Ошибка. Нельзя понизить самый низкий статус (наши пациенты не умирают)"
-        )
+    hospital_controller = HospitalController()
+    hospital = hospital_controller._hospital
+    communication_controller = hospital_controller._communication_controller
 
-        hospital_controller.decrease_patient_status()
-        patient = hospital_controller._hospital._patients[1]
-        assert patient.status == 0, "Неверный статус пациента после понижения минимального статуса"
+    communication_controller.get_patient_id = MagicMock(return_value=1)
+    hospital.decrease_patient_status = MagicMock(side_effect=PatientAlreadyWithMinStatus)
+    communication_controller.print_exception = MagicMock()
+
+    hospital_controller.decrease_patient_status()
+    communication_controller.get_patient_id.assert_called()
+    hospital.decrease_patient_status.assert_called_with(1)
+    communication_controller.print_exception.assert_called_with(
+        "Ошибка. Нельзя понизить самый низкий статус (наши пациенты не умирают)"
+    )
 
 
 def test_successful_discharge_patient():
-    with ConsoleMock() as console_mock:
-        hospital = Hospital(patients=[Patient(patient_id=1, status=3)])
-        hospital_controller = HospitalController(console_mock, hospital)
-        console_mock.add_expected_input(expected_text="Желаете этого пациента выписать? (да/нет)", expected_input="да")
-        console_mock.add_expected_print(print_text="Пациент выписан из больницы")
+    hospital_controller = HospitalController()
+    hospital = hospital_controller._hospital
+    communication_controller = hospital_controller._communication_controller
 
-        hospital_controller._discharge_patient(1)
-        patient = hospital_controller._hospital._patients.get(1)
-        assert patient is None, "После выписки пациент остался в больнице"
+    communication_controller.ask_confirm_discharge_patient = MagicMock(return_value=True)
+    hospital.discharge_patient = MagicMock()
+    communication_controller.print_patient_discharged = MagicMock()
+
+    hospital_controller._discharge_patient(1)
+
+    communication_controller.ask_confirm_discharge_patient.assert_called()
+    hospital.discharge_patient.assert_called()
+    communication_controller.print_patient_discharged.assert_called()
 
 
 def test_unsuccessful_discharge_patient():
-    with ConsoleMock() as console_mock:
-        hospital = Hospital(patients=[Patient(patient_id=1, status=3)])
-        hospital_controller = HospitalController(console_mock, hospital)
-        console_mock.add_expected_input(expected_text="Желаете этого пациента выписать? (да/нет)", expected_input="нет")
-        console_mock.add_expected_print(print_text='Пациент остался в статусе "Готов к выписке"')
+    hospital_controller = HospitalController()
+    hospital = hospital_controller._hospital
+    communication_controller = hospital_controller._communication_controller
 
-        hospital_controller._discharge_patient(1)
-        patient = hospital_controller._hospital._patients.get(1)
-        assert patient is not None, "После НЕ выписки пациент, его нет в больнице"
+    communication_controller.ask_confirm_discharge_patient = MagicMock(return_value=False)
+    hospital.discharge_patient = MagicMock()
+    hospital.get_patient_status_name = MagicMock(return_value="Текущий статус")
+    communication_controller.print_patient_status_not_changed = MagicMock()
+
+    hospital_controller._discharge_patient(1)
+
+    communication_controller.ask_confirm_discharge_patient.assert_called()
+    hospital.discharge_patient.assert_not_called()
+    hospital.get_patient_status_name.assert_called_with(1)
+    communication_controller.print_patient_status_not_changed.assert_called_with("Текущий статус")
 
 
 def test_increase_patient_status():
-    with ConsoleMock() as console_mock:
-        hospital = Hospital(patients=[Patient(patient_id=1, status=1)])
-        hospital_controller = HospitalController(console_mock, hospital)
-        console_mock.add_expected_input(expected_text="Введите ID пациента: ", expected_input="1")
-        console_mock.add_expected_print(print_text='Новый статус пациента: Слегка болен')
+    hospital_controller = HospitalController()
+    hospital = hospital_controller._hospital
+    communication_controller = hospital_controller._communication_controller
 
-        hospital_controller.increase_patient_status()
-        patient = hospital_controller._hospital._patients[1]
-        assert patient.status == 2, "Неверный статус пациента после повышения"
+    communication_controller.get_patient_id = MagicMock(return_value=1)
+    hospital.can_increase_patient_status = MagicMock(return_value=True)
+    hospital.increase_patient_status = MagicMock()
+    hospital.get_patient_status_name = MagicMock(return_value="Новый статус пациента")
+    communication_controller.print_change_patient_status = MagicMock()
+
+    hospital_controller.increase_patient_status()
+
+    communication_controller.get_patient_id.assert_called()
+    hospital.can_increase_patient_status.assert_called_with(1)
+    hospital.increase_patient_status.assert_called_with(1)
+    hospital.get_patient_status_name.assert_called_with(1)
+    communication_controller.print_change_patient_status.assert_called_with("Новый статус пациента")
 
 
 def test_increase_max_patient_status():
-    with ConsoleMock() as console_mock:
-        hospital = Hospital(patients=[Patient(patient_id=1, status=3)])
-        hospital_controller = HospitalController(console_mock, hospital)
-        console_mock.add_expected_input(expected_text="Введите ID пациента: ", expected_input="1")
-        hospital_controller._discharge_patient = MagicMock()
+    hospital_controller = HospitalController()
+    hospital = hospital_controller._hospital
+    communication_controller = hospital_controller._communication_controller
 
-        hospital_controller.increase_patient_status()
-        hospital_controller._discharge_patient.assert_called()
+    communication_controller.get_patient_id = MagicMock(return_value=1)
+    hospital.can_increase_patient_status = MagicMock(return_value=False)
+    hospital.increase_patient_status = MagicMock()
+    communication_controller.print_change_patient_status = MagicMock()
+    hospital.get_patient_status_name = MagicMock()
+    hospital_controller._discharge_patient = MagicMock()
+
+    hospital_controller.increase_patient_status()
+
+    communication_controller.get_patient_id.assert_called()
+    hospital.can_increase_patient_status.assert_called_with(1)
+    hospital.increase_patient_status.assert_not_called()
+    hospital.get_patient_status_name.assert_not_called()
+    hospital_controller._discharge_patient.assert_called_with(1)
 
 
 def test_get_patient_status():
-    with ConsoleMock() as console_mock:
-        hospital = Hospital(patients=[Patient(patient_id=1, status=1)])
-        hospital_controller = HospitalController(console_mock, hospital)
-        console_mock.add_expected_input(expected_text="Введите ID пациента: ", expected_input="1")
-        console_mock.add_expected_print(print_text="Статус пациента: Болен")
+    hospital_controller = HospitalController()
+    hospital = hospital_controller._hospital
+    communication_controller = hospital_controller._communication_controller
 
-        hospital_controller.get_patient_status()
+    communication_controller.get_patient_id = MagicMock(return_value=1)
+    hospital.get_patient_status_name = MagicMock(return_value="Текущий статус")
+    communication_controller.print_current_patient_status = MagicMock()
+
+    hospital_controller.get_patient_status()
+
+    communication_controller.get_patient_id.assert_called()
+    hospital.get_patient_status_name.assert_called_with(1)
+    communication_controller.print_current_patient_status.assert_called_with("Текущий статус")
 
 
 def test_non_existent_patient_decrease_status():
-    with ConsoleMock() as console_mock:
-        hospital = Hospital(patients=[])
-        hospital_controller = HospitalController(console_mock, hospital)
-        console_mock.add_expected_input(expected_text="Введите ID пациента: ", expected_input="1")
-        console_mock.add_expected_print(print_text="Ошибка. В больнице нет пациента с таким ID")
+    hospital_controller = HospitalController()
+    hospital = hospital_controller._hospital
+    communication_controller = hospital_controller._communication_controller
 
-        hospital_controller.decrease_patient_status()
+    communication_controller.get_patient_id = MagicMock(return_value=1)
+    hospital.decrease_patient_status = MagicMock(side_effect=PatientDoesNotExists)
+    communication_controller.print_exception = MagicMock()
+
+    hospital_controller.decrease_patient_status()
+    communication_controller.get_patient_id.assert_called()
+    hospital.decrease_patient_status.assert_called()
+    communication_controller.print_exception.assert_called_with("Ошибка. В больнице нет пациента с таким ID")
 
 
 def test_non_existent_patient_increase_status():
-    with ConsoleMock() as console_mock:
-        hospital = Hospital(patients=[])
-        hospital_controller = HospitalController(console_mock, hospital)
-        console_mock.add_expected_input(expected_text="Введите ID пациента: ", expected_input="1")
-        console_mock.add_expected_print(print_text="Ошибка. В больнице нет пациента с таким ID")
+    hospital_controller = HospitalController()
+    hospital = hospital_controller._hospital
+    communication_controller = hospital_controller._communication_controller
 
-        hospital_controller.increase_patient_status()
+    communication_controller.get_patient_id = MagicMock(return_value=1)
+    hospital.can_increase_patient_status = MagicMock(side_effect=PatientDoesNotExists)
+    hospital.increase_patient_status = MagicMock()
+    communication_controller.print_exception = MagicMock()
+
+    hospital_controller.increase_patient_status()
+    communication_controller.get_patient_id.assert_called()
+    hospital.can_increase_patient_status.assert_called()
+    hospital.increase_patient_status.assert_not_called()
+    communication_controller.print_exception.assert_called_with("Ошибка. В больнице нет пациента с таким ID")
 
 
 def test_non_existent_patient_get_status():
-    with ConsoleMock() as console_mock:
-        hospital = Hospital(patients=[])
-        hospital_controller = HospitalController(console_mock, hospital)
-        console_mock.add_expected_input(expected_text="Введите ID пациента: ", expected_input="1")
-        console_mock.add_expected_print(print_text="Ошибка. В больнице нет пациента с таким ID")
+    hospital_controller = HospitalController()
+    hospital = hospital_controller._hospital
+    communication_controller = hospital_controller._communication_controller
 
-        hospital_controller.get_patient_status()
+    communication_controller.get_patient_id = MagicMock(return_value=1)
+    hospital.get_patient_status_name = MagicMock(side_effect=PatientDoesNotExists)
+    communication_controller.print_exception = MagicMock()
 
-
-@pytest.fixture
-def hospital_with_all_status_patients() -> Hospital:
-    hospital = Hospital()
-    hospital.add_patient(0)
-    hospital.add_patient(1)
-    hospital.add_patient(1)
-    hospital.add_patient(2)
-    hospital.add_patient(3)
-    return hospital
+    hospital_controller.get_patient_status()
+    communication_controller.get_patient_id.assert_called()
+    hospital.get_patient_status_name.assert_called()
+    communication_controller.print_exception.assert_called_with("Ошибка. В больнице нет пациента с таким ID")
 
 
-def test_get_all_statuses_statistics(hospital_with_all_status_patients):
-    with ConsoleMock() as console_mock:
-        hospital_controller = HospitalController(console_mock, hospital_with_all_status_patients)
+def test_print_all_received_from_hospital_statistics():
+    hospital_controller = HospitalController()
+    communication_controller = hospital_controller._communication_controller
+    hospital = hospital_controller._hospital
 
-        console_mock.add_expected_print(print_text="Статистика по статусам:")
-        console_mock.add_expected_print('- в статусе "Тяжело болен": 1 чел.')
-        console_mock.add_expected_print('- в статусе "Болен": 2 чел.')
-        console_mock.add_expected_print('- в статусе "Слегка болен": 1 чел.')
-        console_mock.add_expected_print('- в статусе "Готов к выписке": 1 чел.')
+    statistics = [
+        StatisticsDto(status_name="Статус 1", patients_count=1),
+        StatisticsDto(status_name="Статус 2", patients_count=2)
+    ]
+    hospital.get_statistics = MagicMock(return_value=statistics)
+    communication_controller.print_hospital_statistics = MagicMock()
 
-        hospital_controller.print_statistics()
-
-
-@pytest.fixture
-def hospital_with_limit_status_patients() -> Hospital:
-    hospital = Hospital()
-    hospital.add_patient(0)
-    hospital.add_patient(1)
-    hospital.add_patient(1)
-    return hospital
+    hospital_controller.print_statistics()
+    hospital.get_statistics.assert_called()
+    communication_controller.print_hospital_statistics.assert_called_with(statistics)
 
 
-def test_get_limit_statuses_statistics(hospital_with_limit_status_patients):
-    with ConsoleMock() as console_mock:
-        hospital_controller = HospitalController(console_mock, hospital_with_limit_status_patients)
+def test_print_limit_received_from_hospital_statistics():
+    hospital_controller = HospitalController()
+    communication_controller = hospital_controller._communication_controller
+    hospital = hospital_controller._hospital
 
-        console_mock.add_expected_print(print_text="Статистика по статусам:")
-        console_mock.add_expected_print('- в статусе "Тяжело болен": 1 чел.')
-        console_mock.add_expected_print('- в статусе "Болен": 2 чел.')
+    hospital.get_statistics = MagicMock(return_value=[
+            StatisticsDto(status_name="Статус 1", patients_count=1),
+            StatisticsDto(status_name="Статус 2", patients_count=0)
+        ])
+    communication_controller.print_hospital_statistics = MagicMock()
 
-        hospital_controller.print_statistics()
+    hospital_controller.print_statistics()
+    hospital.get_statistics.assert_called()
+    communication_controller.print_hospital_statistics.assert_called_with(
+        [StatisticsDto(status_name="Статус 1", patients_count=1)]
+    )

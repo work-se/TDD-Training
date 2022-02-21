@@ -59,11 +59,19 @@ class Hospital:
         self._get_patient(patient_id)
         del self._patients[patient_id]
 
+    def can_increase_patient_status(self, patient_id: int) -> bool:
+        patient = self._get_patient(patient_id)
+        return patient.status != self.MAX_STATUS
+
     def increase_patient_status(self, patient_id: int):
         patient = self._get_patient(patient_id)
         if patient.status == self.MAX_STATUS:
             raise PatientAlreadyWithMaxStatus
         patient.increase_status()
+
+    def can_decrease_patient_status(self, patient_id: int) -> bool:
+        patient = self._get_patient(patient_id)
+        return patient.status != self.MIN_STATUS
 
     def decrease_patient_status(self, patient_id: int):
         patient = self._get_patient(patient_id)

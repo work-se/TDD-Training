@@ -3,8 +3,6 @@ from unittest.mock import MagicMock
 import pytest
 
 from controller import InterfaceController
-from hospital import Hospital
-from patient import Patient
 from tests.console_mock import ConsoleMock
 
 
@@ -16,35 +14,52 @@ def test_get_hospital():
     for patient in hospital._patients.values():
         assert patient.status == 1, "Неверный статус у созданных пациентов"
 
-# todo: add tests on exec_func with hospital controller calls mock
+
+def test_correct_english_commands_mapping():
+    with ConsoleMock() as console_mock:
+        interface_controller = InterfaceController(console_mock)
+        hospital_controller = interface_controller._hospital_controller
+
+        console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="calculate statistics")
+        console_mock.add_expected_input("Введите команду: ", "status down")
+        console_mock.add_expected_input("Введите команду: ", "status up")
+        console_mock.add_expected_input("Введите команду: ", "get id")
+        console_mock.add_expected_input("Введите команду: ", "stop")
+
+        hospital_controller.decrease_patient_status = MagicMock()
+        hospital_controller.increase_patient_status = MagicMock()
+        hospital_controller.get_patient_status = MagicMock()
+        hospital_controller.print_statistics = MagicMock()
+        interface_controller._communication_controller.print_end_session = MagicMock()
+
+        interface_controller.exec_command()
+        hospital_controller.print_statistics.assert_called()
+        hospital_controller.decrease_patient_status.assert_called()
+        hospital_controller.increase_patient_status.assert_called()
+        hospital_controller.get_patient_status.assert_called()
+        interface_controller._communication_controller.print_end_session.assert_called()
 
 
-# def test_status_down():
-#     cmd = make_commands()
-#     cmd._dialog_with_user.request_patient_id = MagicMock(return_value=77)
-#     cmd._hospital.patient_status_down = MagicMock()
-#     cmd._hospital.get_patient_status_by_id = MagicMock(return_value='Слегка болен')
-#     cmd._dialog_with_user.send_message = MagicMock()
-#
-#     cmd.status_down()
-#
-#     cmd._dialog_with_user.request_patient_id.assert_called_with()
-#     cmd._hospital.patient_status_down.assert_called_with(77)
-#     cmd._hospital.get_patient_status_by_id.assert_called_with(77)
-#     cmd._dialog_with_user.send_message.assert_called_with('Новый статус пациента: "Слегка болен"')
-#
-#
-# def test_status_down_when_patient_id_not_integer():
-#     cmd = make_commands()
-#     cmd._dialog_with_user.request_patient_id = MagicMock(side_effect=PatientIdNotIntegerError)
-#     cmd._dialog_with_user.send_message = MagicMock()
-#
-#     cmd.status_down()
-#
-#     cmd._dialog_with_user.request_patient_id.assert_called_with()
-#     cmd._dialog_with_user.send_message.assert_called_with('Ошибка ввода. '
-#                                                           'ID пациента должно быть числом (целым, положительным)')
+def test_correct_russian_commands_mapping():
+    with ConsoleMock() as console_mock:
+        interface_controller = InterfaceController(console_mock)
+        hospital_controller = interface_controller._hospital_controller
 
+        console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="рассчитать статистику")
+        console_mock.add_expected_input("Введите команду: ", "понизить статус пациента")
+        console_mock.add_expected_input("Введите команду: ", "повысить статус пациента")
+        console_mock.add_expected_input("Введите команду: ", "узнать статус пациента")
+        console_mock.add_expected_input("Введите команду: ", "стоп")
 
+        hospital_controller.decrease_patient_status = MagicMock()
+        hospital_controller.increase_patient_status = MagicMock()
+        hospital_controller.get_patient_status = MagicMock()
+        hospital_controller.print_statistics = MagicMock()
+        interface_controller._communication_controller.print_end_session = MagicMock()
 
-
+        interface_controller.exec_command()
+        hospital_controller.print_statistics.assert_called()
+        hospital_controller.decrease_patient_status.assert_called()
+        hospital_controller.increase_patient_status.assert_called()
+        hospital_controller.get_patient_status.assert_called()
+        interface_controller._communication_controller.print_end_session.assert_called()

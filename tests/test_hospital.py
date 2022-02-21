@@ -152,3 +152,24 @@ def test_discharge_non_existed_patient():
     hospital = Hospital()
     with pytest.raises(PatientDoesNotExists):
         hospital.discharge_patient(1)
+
+
+def test_can_increase_patient_status():
+    hospital = Hospital(patients=[Patient(patient_id=1, status=3)])
+    assert hospital.can_increase_patient_status(1) is False, \
+        "Неверный результат проверки увеличения максимального статуса"
+
+    hospital = Hospital(patients=[Patient(patient_id=1, status=2)])
+    assert hospital.can_increase_patient_status(1) is True, \
+        "Неверный результат проверки увеличения НЕ максимального статуса"
+
+
+def test_can_decrease_patient_status():
+    hospital = Hospital(patients=[Patient(patient_id=1, status=0)])
+    assert hospital.can_decrease_patient_status(1) is False, \
+        "Неверный результат проверки уменьшения минимального статуса"
+
+    hospital = Hospital(patients=[Patient(patient_id=1, status=1)])
+    assert hospital.can_decrease_patient_status(1) is True, \
+        "Неверный результат проверки уменьшения НЕ минимального статуса"
+

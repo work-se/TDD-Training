@@ -5,6 +5,12 @@ from console import Console
 from dtos.statistics_dto import StatisticsDto
 
 
+class ReceivedInvalidId(Exception):
+
+    def __init__(self):
+        super().__init__("Ошибка ввода. ID пациента должно быть числом (целым, положительным)")
+
+
 class CommandTypes(Enum):
 
     def __new__(cls, value_en: str, value_ru: str):
@@ -58,19 +64,17 @@ class CommunicationsController:
         command = self._console.input("Введите команду: ")
         parsed_command = None
         try:
-            parsed_command = CommandTypes(command)
+            parsed_command = CommandTypes(command.lower())
         except ValueError:
             self._console.print("Неизвестная команда! Попробуйте ещё раз.")
         return parsed_command
 
     def get_patient_id(self) -> Optional[int]:
-        patient_id = None
         patient_id_raw = self._console.input("Введите ID пациента: ")
         try:
-            patient_id = int(patient_id_raw)
+            return int(patient_id_raw)
         except ValueError:
-            self._console.print("Ошибка ввода. ID пациента должно быть числом (целым, положительным)")
-        return patient_id
+            raise ReceivedInvalidId
 
     def ask_confirm_discharge_patient(self) -> bool:
         answer = self._console.input("Желаете этого пациента выписать? (да/нет)")

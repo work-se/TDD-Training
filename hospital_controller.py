@@ -1,5 +1,5 @@
 from console import AbstractConsole, Console
-from communications_controller import CommunicationsController
+from communications_controller import CommunicationsController, ReceivedInvalidId
 from hospital import Hospital
 from hospital import PatientDoesNotExists, PatientAlreadyWithMinStatus
 
@@ -12,14 +12,12 @@ class HospitalController:
         self._communication_controller = CommunicationsController(self._console)
 
     def decrease_patient_status(self):
-        patient_id = self._communication_controller.get_patient_id()
-        if patient_id is None:
-            return
         try:
+            patient_id = self._communication_controller.get_patient_id()
             self._hospital.decrease_patient_status(patient_id)
             status = self._hospital.get_patient_status_name(patient_id)
             self._communication_controller.print_change_patient_status(status)
-        except (PatientAlreadyWithMinStatus, PatientDoesNotExists) as exception:
+        except (PatientAlreadyWithMinStatus, PatientDoesNotExists, ReceivedInvalidId) as exception:
             self._communication_controller.print_exception(str(exception))
 
     def _discharge_patient(self, patient_id: int):
@@ -33,27 +31,23 @@ class HospitalController:
         self._communication_controller.print_patient_status_not_changed(status)
 
     def increase_patient_status(self):
-        patient_id = self._communication_controller.get_patient_id()
-        if patient_id is None:
-            return
         try:
+            patient_id = self._communication_controller.get_patient_id()
             if not self._hospital.can_increase_patient_status(patient_id):
                 self._discharge_patient(patient_id)
                 return
             self._hospital.increase_patient_status(patient_id)
             status = self._hospital.get_patient_status_name(patient_id)
             self._communication_controller.print_change_patient_status(status)
-        except PatientDoesNotExists as exception:
+        except (PatientDoesNotExists, ReceivedInvalidId) as exception:
             self._communication_controller.print_exception(str(exception))
 
     def get_patient_status(self):
-        patient_id = self._communication_controller.get_patient_id()
-        if patient_id is None:
-            return
         try:
+            patient_id = self._communication_controller.get_patient_id()
             status = self._hospital.get_patient_status_name(patient_id)
             self._communication_controller.print_current_patient_status(status)
-        except PatientDoesNotExists as exception:
+        except (PatientDoesNotExists, ReceivedInvalidId) as exception:
             self._communication_controller.print_exception(str(exception))
 
     def print_statistics(self,):

@@ -1,6 +1,6 @@
 import pytest
 
-from communications_controller import CommunicationsController, CommandTypes
+from communications_controller import CommunicationsController, CommandTypes, ReceivedInvalidId
 from dtos.statistics_dto import StatisticsDto
 from tests.console_mock import ConsoleMock
 
@@ -52,12 +52,11 @@ def test_wrong_patient_id(wrong_id):
     with ConsoleMock() as console_mock:
         communications_controller = CommunicationsController(console_mock)
         console_mock.add_expected_input(expected_text="Введите ID пациента: ", expected_input=wrong_id)
-        console_mock.add_expected_print(
-            print_text="Ошибка ввода. ID пациента должно быть числом (целым, положительным)"
-        )
 
-        patient_id = communications_controller.get_patient_id()
-        assert patient_id is None, "Получен какой-то id при некорректном вводе"
+        with pytest.raises(ReceivedInvalidId) as exception:
+            communications_controller.get_patient_id()
+        assert "Ошибка ввода. ID пациента должно быть числом (целым, положительным)" == str(exception.value), \
+            "Неожиданный текст ошибки"
 
 
 def test_confirm_discharge_patient():

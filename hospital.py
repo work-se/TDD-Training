@@ -23,6 +23,9 @@ class PatientAlreadyWithMinStatus(Exception):
 
 
 class Hospital:
+    DEFAULT_PATIENT_STATUS = 1
+    USERS_COUNT = 200
+
     PATIENT_STATUSES = {
         0: "Тяжело болен",
         1: "Болен",
@@ -32,9 +35,18 @@ class Hospital:
     MIN_STATUS = min(PATIENT_STATUSES.keys())
     MAX_STATUS = max(PATIENT_STATUSES.keys())
     
-    def __init__(self, patients: Iterable[Patient] = None):
-        self._patients: Dict[int, Patient] = {} if patients is None else self._form_patients_dict(patients)
-        self._patients_index = len(self._patients)
+    def __init__(self, patients=None):
+        self._patients_index = 0
+        self._patients = {}
+        self._form_hospital(patients)
+
+    def _form_hospital(self, patients):
+        if patients is not None:
+            self._patients = {patient.patient_id: patient for patient in patients}
+            self._patients_index = len(self._patients)
+        else:
+            for i in range(self.USERS_COUNT):
+                self.add_patient(self.DEFAULT_PATIENT_STATUS)
 
     @staticmethod
     def _form_patients_dict(patients: Iterable[Patient]):

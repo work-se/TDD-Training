@@ -4,15 +4,26 @@ from hospital import Hospital, PatientDoesNotExists, PatientAlreadyWithMaxStatus
 from patient import Patient
 
 
-def test_hospital_creation():
+def test_default_hospital_creation():
     hospital = Hospital()
-    assert hospital._patients_index == 0, "Неверное количество пациентов"
-    assert len(hospital._patients) == 0, "Количество объектов пациентов не совпадает со счетчиком пациентов"
+    assert hospital._patients_index == 200, "Неверное количество пациентов"
+    assert len(hospital._patients) == 200, "Количество объектов пациентов не совпадает со счетчиком пациентов"
+    patients_statuses = list(set([patient.status for patient in hospital._patients.values()]))
+    assert len(patients_statuses) == 1, "Пациенты созданы не с одинаковым статусом"
+    assert patients_statuses[0] == 1, "Неверный статус у созданных пациентов"
+
+
+def test_custom_hospital_creation():
+    hospital = Hospital([Patient(patient_id=1, status=2)])
+    assert hospital._patients_index == 1, "Неверное количество пациентов"
+    assert len(hospital._patients) == 1, "Количество объектов пациентов не совпадает со счетчиком пациентов"
+    assert hospital._patients.get(1) is not None, "Переданный пациент не сохранен в больнице"
+    assert hospital._patients[1].status == 2, "Неверный статус у созданного пациента"
 
 
 def test_add_patients_to_hospital():
     statuses = [0, 1, 2, 3, 0, 1]
-    hospital = Hospital()
+    hospital = Hospital([])
 
     for status in statuses:
         hospital.add_patient(status=status)
@@ -36,7 +47,7 @@ def test_increase_patient_status(hospital_with_patient):
 
 
 def test_increase_non_existent_patient_status():
-    hospital = Hospital()
+    hospital = Hospital([])
     with pytest.raises(PatientDoesNotExists):
         hospital.increase_patient_status(patient_id=1)
 
@@ -55,7 +66,7 @@ def test_decrease_patient_status(hospital_with_patient):
 
 
 def test_decrease_non_existent_patient_status():
-    hospital = Hospital()
+    hospital = Hospital([])
     with pytest.raises(PatientDoesNotExists):
         hospital.decrease_patient_status(patient_id=1)
 
@@ -74,7 +85,7 @@ def test_get_patient_status(hospital_with_patient):
 
 
 def test_get_non_existent_patient_status():
-    hospital = Hospital()
+    hospital = Hospital([])
     with pytest.raises(PatientDoesNotExists):
         hospital.get_patient_status_name(patient_id=1)
 
@@ -149,7 +160,7 @@ def test_discharge_patient():
 
 
 def test_discharge_non_existed_patient():
-    hospital = Hospital()
+    hospital = Hospital([])
     with pytest.raises(PatientDoesNotExists):
         hospital.discharge_patient(1)
 

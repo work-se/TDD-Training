@@ -1,4 +1,6 @@
-from controller import InterfaceController
+from application import Application
+from communications_controller import CommunicationsController
+from hospital_controller import HospitalController
 from tests.console_mock import ConsoleMock
 
 
@@ -8,7 +10,9 @@ def test_complex_script_iteration_1_num_1():
     сценарий из файла tasks/Тренинг_по_архитектуре_итерация_1.md
     """
     console_mock = ConsoleMock()
-    interface_controller = InterfaceController(console=console_mock)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="узнать статус пациента")
     console_mock.add_expected_input("Введите ID пациента: ", "1")
@@ -31,7 +35,7 @@ def test_complex_script_iteration_1_num_1():
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
     console_mock.check_all_mocks_used()
 
 
@@ -43,7 +47,9 @@ def test_complex_script_iteration_2_num_1():
     сценарий из файла tasks/Тренинг_по_архитектуре_итерация_2.md
     """
     console_mock = ConsoleMock()
-    interface_controller = InterfaceController(console=console_mock)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="повысить статус пациента")
     console_mock.add_expected_input("Введите ID пациента: ", "200")
@@ -65,7 +71,7 @@ def test_complex_script_iteration_2_num_1():
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
     console_mock.check_all_mocks_used()
 
 
@@ -77,7 +83,9 @@ def test_complex_script_iteration_2_num_2():
     сценарий из файла tasks/Тренинг_по_архитектуре_итерация_2.md
     """
     console_mock = ConsoleMock()
-    interface_controller = InterfaceController(console=console_mock)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="повысить статус пациента")
     console_mock.add_expected_input("Введите ID пациента: ", "200")
@@ -100,7 +108,7 @@ def test_complex_script_iteration_2_num_2():
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
     console_mock.check_all_mocks_used()
 
 
@@ -112,7 +120,9 @@ def test_complex_script_iteration_2_num_3():
     сценарий из файла tasks/Тренинг_по_архитектуре_итерация_2.md
     """
     console_mock = ConsoleMock()
-    interface_controller = InterfaceController(console=console_mock)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="понизить статус пациента")
     console_mock.add_expected_input("Введите ID пациента: ", "1")
@@ -134,7 +144,7 @@ def test_complex_script_iteration_2_num_3():
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
     console_mock.check_all_mocks_used()
 
 
@@ -146,7 +156,9 @@ def test_complex_script_iteration_2_num_4():
     сценарий из файла tasks/Тренинг_по_архитектуре_итерация_2.md
     """
     console_mock = ConsoleMock()
-    interface_controller = InterfaceController(console=console_mock)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="узнать статус пациента")
     console_mock.add_expected_input("Введите ID пациента: ", "два")
@@ -159,5 +171,5 @@ def test_complex_script_iteration_2_num_4():
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
     console_mock.check_all_mocks_used()

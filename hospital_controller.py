@@ -1,4 +1,3 @@
-from console import AbstractConsole, Console
 from communications_controller import CommunicationsController, ReceivedInvalidId
 from hospital import Hospital
 from hospital import PatientDoesNotExists, PatientAlreadyWithMinStatus
@@ -6,10 +5,11 @@ from hospital import PatientDoesNotExists, PatientAlreadyWithMinStatus
 
 class HospitalController:
 
-    def __init__(self, console: AbstractConsole = None, hospital: Hospital = None):
-        self._console = console if console is not None else Console()
+    def __init__(self, communication_controller=None, hospital=None):
         self._hospital = hospital if hospital is not None else Hospital()
-        self._communication_controller = CommunicationsController(self._console)
+        self._communication_controller = (
+            communication_controller if communication_controller is not None else CommunicationsController()
+        )
 
     def decrease_patient_status(self):
         try:
@@ -20,25 +20,20 @@ class HospitalController:
         except (PatientAlreadyWithMinStatus, PatientDoesNotExists, ReceivedInvalidId) as exception:
             self._communication_controller.print_exception(str(exception))
 
-    def _discharge_patient(self, patient_id: int):
-        discharge_patient = self._communication_controller.ask_confirm_discharge_patient()
-        if discharge_patient:
-            self._hospital.discharge_patient(patient_id)
-            self._communication_controller.print_patient_discharged()
-            return
-
-        status = self._hospital.get_patient_status_name(patient_id)
-        self._communication_controller.print_patient_status_not_changed(status)
-
     def increase_patient_status(self):
         try:
             patient_id = self._communication_controller.get_patient_id()
-            if not self._hospital.can_increase_patient_status(patient_id):
-                self._discharge_patient(patient_id)
-                return
-            self._hospital.increase_patient_status(patient_id)
-            status = self._hospital.get_patient_status_name(patient_id)
-            self._communication_controller.print_change_patient_status(status)
+            if self._hospital.can_increase_patient_status(patient_id):
+                self._hospital.increase_patient_status(patient_id)
+                status = self._hospital.get_patient_status_name(patient_id)
+                self._communication_controller.print_change_patient_status(status)
+            else:
+                if self._communication_controller.request_confirm_discharge_patient():
+                    self._hospital.discharge_patient(patient_id)
+                    self._communication_controller.print_patient_discharged()
+                else:
+                    status = self._hospital.get_patient_status_name(patient_id)
+                    self._communication_controller.print_patient_status_not_changed(status)
         except (PatientDoesNotExists, ReceivedInvalidId) as exception:
             self._communication_controller.print_exception(str(exception))
 

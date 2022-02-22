@@ -76,6 +76,6 @@ class CommunicationsController:
         except ValueError:
             raise ReceivedInvalidId
 
-    def ask_confirm_discharge_patient(self) -> bool:
+    def request_confirm_discharge_patient(self) -> bool:
         answer = self._console.input("Желаете этого пациента выписать? (да/нет)")
         return "да" == answer

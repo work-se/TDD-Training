@@ -1,14 +1,18 @@
 import pytest
 
-from controller import InterfaceController
+from application import Application
+from communications_controller import CommunicationsController
 from hospital import Hospital
+from hospital_controller import HospitalController
 from patient import Patient
 from tests.console_mock import ConsoleMock
 
 
 def test_wrong_command_input():
     console_mock = ConsoleMock()
-    interface_controller = InterfaceController(console=console_mock)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="Неизвестная команда")
     console_mock.add_expected_print(print_text="Неизвестная команда! Попробуйте ещё раз.")
@@ -16,7 +20,7 @@ def test_wrong_command_input():
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
     console_mock.check_all_mocks_used()
 
 
@@ -25,11 +29,13 @@ def test_wrong_command_input():
 )
 def test_stop_command(command):
     console_mock = ConsoleMock()
-    interface_controller = InterfaceController(console=console_mock)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input=command)
     console_mock.add_expected_print(print_text="Сеанс завершён.")
-    interface_controller.exec_command()
+    application.exec_command()
     console_mock.check_all_mocks_used()
 
 
@@ -38,7 +44,9 @@ def test_stop_command(command):
 )
 def test_input_wrong_patient_id(wrong_id):
     console_mock = ConsoleMock()
-    interface_controller = InterfaceController(console=console_mock)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="get id")
     console_mock.add_expected_input("Введите ID пациента: ", wrong_id)
@@ -47,7 +55,7 @@ def test_input_wrong_patient_id(wrong_id):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
     console_mock.check_all_mocks_used()
 
 
@@ -57,7 +65,9 @@ def test_input_wrong_patient_id(wrong_id):
 def test_access_non_existent_patient(command):
     console_mock = ConsoleMock()
     hospital = Hospital(patients=[Patient(patient_id=1, status=1)])
-    interface_controller = InterfaceController(console=console_mock, hospital=hospital)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller, hospital)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input=command)
     console_mock.add_expected_input("Введите ID пациента: ", "2")
@@ -66,7 +76,7 @@ def test_access_non_existent_patient(command):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
     console_mock.check_all_mocks_used()
 
 
@@ -75,7 +85,9 @@ def test_access_non_existent_patient(command):
 )
 def test_decrease_patient_status(command):
     console_mock = ConsoleMock()
-    interface_controller = InterfaceController(console=console_mock)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input=command)
     console_mock.add_expected_input("Введите ID пациента: ", "1")
@@ -84,9 +96,9 @@ def test_decrease_patient_status(command):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
 
-    patient = interface_controller._hospital._patients[1]
+    patient = application._hospital_controller._hospital._patients[1]
     assert patient.status == 0, "Неверный статус пациента после изменения"
     console_mock.check_all_mocks_used()
 
@@ -97,7 +109,9 @@ def test_decrease_patient_status(command):
 def test_decrease_min_patient_status(command):
     console_mock = ConsoleMock()
     hospital = Hospital(patients=[Patient(patient_id=1, status=0)])
-    interface_controller = InterfaceController(console=console_mock, hospital=hospital)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller, hospital)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input=command)
     console_mock.add_expected_input("Введите ID пациента: ", "1")
@@ -106,7 +120,7 @@ def test_decrease_min_patient_status(command):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
     console_mock.check_all_mocks_used()
 
 
@@ -115,7 +129,9 @@ def test_decrease_min_patient_status(command):
 )
 def test_increase_patient_status(command):
     console_mock = ConsoleMock()
-    interface_controller = InterfaceController(console=console_mock)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input=command)
     console_mock.add_expected_input("Введите ID пациента: ", "1")
@@ -124,9 +140,9 @@ def test_increase_patient_status(command):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
 
-    patient = interface_controller._hospital._patients[1]
+    patient = application._hospital_controller._hospital._patients[1]
     assert patient.status == 2, "Неверный статус пациента после изменения"
     console_mock.check_all_mocks_used()
 
@@ -137,7 +153,9 @@ def test_increase_patient_status(command):
 def test_increase_max_patient_status(command):
     console_mock = ConsoleMock()
     hospital = Hospital(patients=[Patient(patient_id=1, status=3)])
-    interface_controller = InterfaceController(console=console_mock, hospital=hospital)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller, hospital)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input=command)
     console_mock.add_expected_input("Введите ID пациента: ", "1")
@@ -151,7 +169,7 @@ def test_increase_max_patient_status(command):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
     console_mock.check_all_mocks_used()
 
 
@@ -161,7 +179,9 @@ def test_increase_max_patient_status(command):
 def test_increase_max_patient_status_with_discharge(command):
     console_mock = ConsoleMock()
     hospital = Hospital(patients=[Patient(patient_id=1, status=3)])
-    interface_controller = InterfaceController(console=console_mock, hospital=hospital)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller, hospital)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input=command)
     console_mock.add_expected_input("Введите ID пациента: ", "1")
@@ -175,7 +195,7 @@ def test_increase_max_patient_status_with_discharge(command):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
     console_mock.check_all_mocks_used()
 
 
@@ -184,7 +204,9 @@ def test_increase_max_patient_status_with_discharge(command):
 )
 def test_get_patient_status(command):
     console_mock = ConsoleMock()
-    interface_controller = InterfaceController(console=console_mock)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input=command)
     console_mock.add_expected_input("Введите ID пациента: ", "1")
@@ -193,13 +215,13 @@ def test_get_patient_status(command):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
     console_mock.check_all_mocks_used()
 
 
 @pytest.fixture
 def hospital_with_all_status_patients() -> Hospital:
-    hospital = Hospital()
+    hospital = Hospital([])
     hospital.add_patient(0)
     hospital.add_patient(1)
     hospital.add_patient(1)
@@ -213,7 +235,9 @@ def hospital_with_all_status_patients() -> Hospital:
 )
 def test_get_all_statuses_statistics(command, hospital_with_all_status_patients):
     console_mock = ConsoleMock()
-    interface_controller = InterfaceController(console=console_mock, hospital=hospital_with_all_status_patients)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller, hospital_with_all_status_patients)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input=command)
     console_mock.add_expected_print(print_text="Статистика по статусам:")
@@ -225,13 +249,13 @@ def test_get_all_statuses_statistics(command, hospital_with_all_status_patients)
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
     console_mock.check_all_mocks_used()
 
 
 @pytest.fixture
 def hospital_with_limit_status_patients() -> Hospital:
-    hospital = Hospital()
+    hospital = Hospital([])
     hospital.add_patient(0)
     hospital.add_patient(1)
     hospital.add_patient(1)
@@ -243,7 +267,9 @@ def hospital_with_limit_status_patients() -> Hospital:
 )
 def test_get_limit_statuses_statistics(command, hospital_with_limit_status_patients):
     console_mock = ConsoleMock()
-    interface_controller = InterfaceController(console=console_mock, hospital=hospital_with_limit_status_patients)
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller, hospital_with_limit_status_patients)
+    application = Application(communications_controller, hospital_controller)
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input=command)
     console_mock.add_expected_print(print_text="Статистика по статусам:")
@@ -253,5 +279,5 @@ def test_get_limit_statuses_statistics(command, hospital_with_limit_status_patie
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    interface_controller.exec_command()
+    application.exec_command()
     console_mock.check_all_mocks_used()

@@ -1,15 +1,32 @@
 import pytest
 
+from console import Console
 from communications_controller import CommunicationsController, CommandTypes, ReceivedInvalidId
 from dtos.statistics_dto import StatisticsDto
 from tests.console_mock import ConsoleMock
+
+
+def test_command_types_parse_str_commands():
+    assert CommandTypes("stop") == CommandTypes.STOP, "По английской строке определена неверная команда"
+    assert CommandTypes("стоп") == CommandTypes.STOP, "По русской строке определена неверная команда"
+
+
+def test_default_communications_controller_creation():
+    communications_controller = CommunicationsController()
+    assert isinstance(communications_controller._console, Console), "Неверный тип атрибута после создания"
+
+
+def test_custom_communications_controller_creation():
+    communications_controller = CommunicationsController(ConsoleMock())
+    assert isinstance(communications_controller._console, ConsoleMock), "Неверный тип атрибута после создания"
 
 
 @pytest.mark.parametrize(
     "command,expected_command",
     (
         ("stop", CommandTypes.STOP), ("стоп", CommandTypes.STOP),
-        ("calculate statistics", CommandTypes.CALCULATE_STAT), ("рассчитать статистику", CommandTypes.CALCULATE_STAT),
+        ("calculate statistics", CommandTypes.CALCULATE_STAT),
+        ("рассчитать статистику", CommandTypes.CALCULATE_STAT),
         ("status down", CommandTypes.DECREASE_PATIENT_STAT),
         ("понизить статус пациента", CommandTypes.DECREASE_PATIENT_STAT),
         ("status up", CommandTypes.INCREASE_PATIENT_STAT),
@@ -64,11 +81,11 @@ def test_confirm_discharge_patient():
         communications_controller = CommunicationsController(console_mock)
 
         console_mock.add_expected_input(expected_text="Желаете этого пациента выписать? (да/нет)", expected_input="да")
-        answer = communications_controller.ask_confirm_discharge_patient()
+        answer = communications_controller.request_confirm_discharge_patient()
         assert answer is True, "Неверно интерпретировано подтверждение выписки пациента"
 
         console_mock.add_expected_input("Желаете этого пациента выписать? (да/нет)", "нет")
-        answer = communications_controller.ask_confirm_discharge_patient()
+        answer = communications_controller.request_confirm_discharge_patient()
         assert answer is False, "Неверно интерпретировано подтверждение выписки пациента"
 
 

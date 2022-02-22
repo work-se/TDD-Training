@@ -1,9 +1,9 @@
 import sys
 
-from controller import InterfaceController
+from application import Application
 
 
-controller = InterfaceController()
+controller = Application()
 
 
 if __name__ == "__main__":

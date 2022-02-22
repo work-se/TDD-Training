@@ -7,8 +7,30 @@ from tests.console_mock import ConsoleMock
 
 
 def test_command_types_parse_str_commands():
+    asd = CommandTypes
+
     assert CommandTypes("stop") == CommandTypes.STOP, "По английской строке определена неверная команда"
     assert CommandTypes("стоп") == CommandTypes.STOP, "По русской строке определена неверная команда"
+
+
+@pytest.mark.parametrize(
+    "en_command,ru_command,expected_type",
+    (
+        ("stop", "стоп", CommandTypes.STOP),
+        ("calculate statistics", "рассчитать статистику", CommandTypes.CALCULATE_STAT),
+        ("status down", "понизить статус пациента", CommandTypes.DECREASE_PATIENT_STAT),
+        ("status up", "повысить статус пациента", CommandTypes.INCREASE_PATIENT_STAT),
+        ("get id", "узнать статус пациента", CommandTypes.GET_PATIENT_STAT),
+    )
+)
+def test_command_types_internal_logic(en_command, ru_command, expected_type):
+    assert en_command in CommandTypes._value2member_map_, \
+        "Нет английского текста команды в списке доступных для парсинга команд"
+    assert ru_command in CommandTypes._value2member_map_, \
+        "Нет русского текста команды в списке доступных для парсинга команд"
+    assert CommandTypes(en_command) == CommandTypes(ru_command), \
+        "Английский и русский версии команды ведут на разный enum instance"
+    assert CommandTypes(en_command) == expected_type, "По команде получен enum instance отличный от ожидаемого"
 
 
 def test_default_communications_controller_creation():

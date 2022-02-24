@@ -3,12 +3,13 @@ import pytest
 from console import Console
 from communications_controller import CommunicationsController, CommandTypes, ReceivedInvalidId
 from dtos.statistics_dto import StatisticsDto
-from tests.console_mock import ConsoleMock
+from tests.mocks.console_mock import ConsoleMock
+
+
+# Здесь почти unit-тесты (используется только ConsoleMock)
 
 
 def test_command_types_parse_str_commands():
-    asd = CommandTypes
-
     assert CommandTypes("stop") == CommandTypes.STOP, "По английской строке определена неверная команда"
     assert CommandTypes("стоп") == CommandTypes.STOP, "По русской строке определена неверная команда"
 

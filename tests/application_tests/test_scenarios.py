@@ -1,7 +1,7 @@
 from application import Application
 from communications_controller import CommunicationsController
 from hospital_controller import HospitalController
-from tests.console_mock import ConsoleMock
+from tests.mocks.console_mock import ConsoleMock
 
 
 def test_complex_script_iteration_1_num_1():
@@ -35,7 +35,7 @@ def test_complex_script_iteration_1_num_1():
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
     console_mock.check_all_mocks_used()
 
 
@@ -71,7 +71,7 @@ def test_complex_script_iteration_2_num_1():
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
     console_mock.check_all_mocks_used()
 
 
@@ -108,7 +108,7 @@ def test_complex_script_iteration_2_num_2():
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
     console_mock.check_all_mocks_used()
 
 
@@ -144,7 +144,7 @@ def test_complex_script_iteration_2_num_3():
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
     console_mock.check_all_mocks_used()
 
 
@@ -171,5 +171,5 @@ def test_complex_script_iteration_2_num_4():
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
     console_mock.check_all_mocks_used()

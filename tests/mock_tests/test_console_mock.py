@@ -1,6 +1,6 @@
 import pytest
 
-from tests.console_mock import ConsoleMock
+from tests.mocks.console_mock import ConsoleMock
 
 
 def test_add_expected_input():

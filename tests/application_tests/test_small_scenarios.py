@@ -5,7 +5,7 @@ from communications_controller import CommunicationsController
 from hospital import Hospital
 from hospital_controller import HospitalController
 from patient import Patient
-from tests.console_mock import ConsoleMock
+from tests.mocks.console_mock import ConsoleMock
 
 
 def test_wrong_command_input():
@@ -20,7 +20,7 @@ def test_wrong_command_input():
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
     console_mock.check_all_mocks_used()
 
 
@@ -35,7 +35,7 @@ def test_stop_command(command):
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input=command)
     console_mock.add_expected_print(print_text="Сеанс завершён.")
-    application.exec_command()
+    application.exec_command_loop()
     console_mock.check_all_mocks_used()
 
 
@@ -55,7 +55,7 @@ def test_input_wrong_patient_id(wrong_id):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
     console_mock.check_all_mocks_used()
 
 
@@ -76,7 +76,7 @@ def test_access_non_existent_patient(command):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
     console_mock.check_all_mocks_used()
 
 
@@ -96,7 +96,7 @@ def test_decrease_patient_status(command):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
 
     patient = application._hospital_controller._hospital._patients[1]
     assert patient.status == 0, "Неверный статус пациента после изменения"
@@ -120,7 +120,7 @@ def test_decrease_min_patient_status(command):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
     console_mock.check_all_mocks_used()
 
 
@@ -140,7 +140,7 @@ def test_increase_patient_status(command):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
 
     patient = application._hospital_controller._hospital._patients[1]
     assert patient.status == 2, "Неверный статус пациента после изменения"
@@ -169,7 +169,7 @@ def test_increase_max_patient_status(command):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
     console_mock.check_all_mocks_used()
 
 
@@ -195,7 +195,7 @@ def test_increase_max_patient_status_with_discharge(command):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
     console_mock.check_all_mocks_used()
 
 
@@ -215,7 +215,7 @@ def test_get_patient_status(command):
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
     console_mock.check_all_mocks_used()
 
 
@@ -249,7 +249,7 @@ def test_get_all_statuses_statistics(command, hospital_with_all_status_patients)
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
     console_mock.check_all_mocks_used()
 
 
@@ -279,5 +279,5 @@ def test_get_limit_statuses_statistics(command, hospital_with_limit_status_patie
     console_mock.add_expected_input("Введите команду: ", "stop")
     console_mock.add_expected_print("Сеанс завершён.")
 
-    application.exec_command()
+    application.exec_command_loop()
     console_mock.check_all_mocks_used()

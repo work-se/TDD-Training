@@ -4,6 +4,14 @@ from hospital import Hospital, PatientDoesNotExists, PatientAlreadyWithMaxStatus
 from patient import Patient
 
 
+# Интеграционный тест, т.к. проверяется именно заведение необходимого
+# количества объектов с заданными характеристиками.
+# Также, объект Patient достаточно простой и написан самостоятельно (не внешний) =>
+# проще и быстрее использовать настоящий объект, нежели мокать его.
+# Порядок вызова конкретных методов Patient в данном случае не так важно, т.к. Hospital не просто вызывает
+# нужные действия в ответ на полученные данны, а он обрабатывает и несет в себе дополнительную логику
+
+
 def test_default_hospital_creation():
     hospital = Hospital()
     assert hospital._patients_index == 200, "Неверное количество пациентов"
@@ -135,12 +143,7 @@ def test_statistics_info(patients, expected_statistics):
 
 def test_get_patient():
     hospital = Hospital(patients=[Patient(patient_id=1, status=1)])
-
-    try:
-        patient = hospital._get_patient(1)
-    except PatientDoesNotExists:
-        assert False, "Ложное срабатывание проверки на существующего пользователя"
-
+    patient = hospital._get_patient(1)
     assert patient.patient_id == 1, "Получен неверный пользователь по id"
 
 

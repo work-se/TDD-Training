@@ -4,7 +4,13 @@ from communications_controller import CommunicationsController
 from hospital import Hospital, PatientAlreadyWithMinStatus, PatientDoesNotExists, StatisticsDto
 from hospital_controller import HospitalController
 from patient import Patient
-from tests.console_mock import ConsoleMock
+from tests.mocks.console_mock import ConsoleMock
+
+
+# Обмен данными между HospitalController и Hospital не сложный,
+# HospitalController представляет собой как раз менеджер для Hospital,
+# поэтому можно протестировать именно порядок вызовов нужных методов с помощью моков
+# Кроме того, это выглядит более наглядным, чем составлять тестовые данные для Hospital в ожидании конкретного поведения
 
 
 def test_default_hospital_controller_creations():

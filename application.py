@@ -10,20 +10,27 @@ class Application:
         )
         self._hospital_controller = hospital_controller if hospital_controller is not None else HospitalController()
 
-    def exec_command(self):
-        while True:
+    def exec_command(self, command: CommandTypes):
+        if command == CommandTypes.DECREASE_PATIENT_STAT:
+            self._hospital_controller.decrease_patient_status()
+        elif command == CommandTypes.INCREASE_PATIENT_STAT:
+            self._hospital_controller.increase_patient_status()
+        elif command == CommandTypes.GET_PATIENT_STAT:
+            self._hospital_controller.get_patient_status()
+        elif command == CommandTypes.CALCULATE_STAT:
+            self._hospital_controller.print_statistics()
+        elif command == CommandTypes.STOP:
+            self._communications_controller.print_end_session()
+
+    @staticmethod
+    def _check_continue_loop(command: CommandTypes) -> bool:
+        return command != CommandTypes.STOP
+
+    def exec_command_loop(self):
+        continue_loop = True
+        while continue_loop:
             command = self._communications_controller.get_command()
             if command is None:
                 continue
-
-            if command == CommandTypes.DECREASE_PATIENT_STAT:
-                self._hospital_controller.decrease_patient_status()
-            elif command == CommandTypes.INCREASE_PATIENT_STAT:
-                self._hospital_controller.increase_patient_status()
-            elif command == CommandTypes.GET_PATIENT_STAT:
-                self._hospital_controller.get_patient_status()
-            elif command == CommandTypes.CALCULATE_STAT:
-                self._hospital_controller.print_statistics()
-            elif command == CommandTypes.STOP:
-                self._communications_controller.print_end_session()
-                break
+            self.exec_command(command)
+            continue_loop = self._check_continue_loop(command)

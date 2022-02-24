@@ -1,11 +1,18 @@
+import pytest
+
 from unittest.mock import MagicMock
 
 from application import Application
-from communications_controller import CommunicationsController
+from communications_controller import CommunicationsController, CommandTypes
 from hospital import Hospital
 from hospital_controller import HospitalController
 from patient import Patient
-from tests.console_mock import ConsoleMock
+from tests.mocks.console_mock import ConsoleMock
+from tests.mocks.hospital_controller_mock import get_mocked_hospital_controller
+
+
+# Application в данном случае является менеджером, который по вводу определяет требующийся порядок вызовов,
+# поэтому будем реализовывать как Unit-test + mock
 
 
 def test_default_application_creation():
@@ -32,51 +39,33 @@ def test_custom_application_creation():
         "Сохраненный атрибут _communications_controller отличается от переданного в конструкторе"
 
 
-def test_correct_english_commands_mapping():
-    with ConsoleMock() as console_mock:
-        application = Application(CommunicationsController(console_mock))
-        hospital_controller = application._hospital_controller
+def test_correct_commands_mapping():
 
-        console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="calculate statistics")
-        console_mock.add_expected_input("Введите команду: ", "status down")
-        console_mock.add_expected_input("Введите команду: ", "status up")
-        console_mock.add_expected_input("Введите команду: ", "get id")
-        console_mock.add_expected_input("Введите команду: ", "stop")
+    hospital_controller = get_mocked_hospital_controller()
+    communication_controller = CommunicationsController()
+    application = Application(communication_controller, hospital_controller)
+    communication_controller.print_end_session = MagicMock()
 
-        hospital_controller.decrease_patient_status = MagicMock()
-        hospital_controller.increase_patient_status = MagicMock()
-        hospital_controller.get_patient_status = MagicMock()
-        hospital_controller.print_statistics = MagicMock()
-        application._communications_controller.print_end_session = MagicMock()
+    application.exec_command(CommandTypes.GET_PATIENT_STAT)
+    hospital_controller.get_patient_status.assert_called()
 
-        application.exec_command()
-        hospital_controller.print_statistics.assert_called()
-        hospital_controller.decrease_patient_status.assert_called()
-        hospital_controller.increase_patient_status.assert_called()
-        hospital_controller.get_patient_status.assert_called()
-        application._communications_controller.print_end_session.assert_called()
+    application.exec_command(CommandTypes.INCREASE_PATIENT_STAT)
+    hospital_controller.increase_patient_status.assert_called()
+
+    application.exec_command(CommandTypes.DECREASE_PATIENT_STAT)
+    hospital_controller.decrease_patient_status.assert_called()
+
+    application.exec_command(CommandTypes.CALCULATE_STAT)
+    hospital_controller.print_statistics.assert_called()
+
+    application.exec_command(CommandTypes.STOP)
+    communication_controller.print_end_session.assert_called()
 
 
-def test_correct_russian_commands_mapping():
-    with ConsoleMock() as console_mock:
-        application = Application(CommunicationsController(console_mock))
-        hospital_controller = application._hospital_controller
-
-        console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="рассчитать статистику")
-        console_mock.add_expected_input("Введите команду: ", "понизить статус пациента")
-        console_mock.add_expected_input("Введите команду: ", "повысить статус пациента")
-        console_mock.add_expected_input("Введите команду: ", "узнать статус пациента")
-        console_mock.add_expected_input("Введите команду: ", "стоп")
-
-        hospital_controller.decrease_patient_status = MagicMock()
-        hospital_controller.increase_patient_status = MagicMock()
-        hospital_controller.get_patient_status = MagicMock()
-        hospital_controller.print_statistics = MagicMock()
-        application._communications_controller.print_end_session = MagicMock()
-
-        application.exec_command()
-        hospital_controller.print_statistics.assert_called()
-        hospital_controller.decrease_patient_status.assert_called()
-        hospital_controller.increase_patient_status.assert_called()
-        hospital_controller.get_patient_status.assert_called()
-        application._communications_controller.print_end_session.assert_called()
+def test_check_continue_loop():
+    for command in CommandTypes:
+        continue_loop_result = Application._check_continue_loop(command)
+        if command != CommandTypes.STOP:
+            assert continue_loop_result is True, "Неверное значение для продолжения цикла выполнения команд"
+        else:
+            assert continue_loop_result is False, "Неверное значение остановки цикла при команде стоп"

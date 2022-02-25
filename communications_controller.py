@@ -69,7 +69,7 @@ class CommunicationsController:
             self._console.print("Неизвестная команда! Попробуйте ещё раз.")
         return parsed_command
 
-    def get_patient_id(self) -> Optional[int]:
+    def get_patient_id(self) -> int:
         patient_id_raw = self._console.input("Введите ID пациента: ")
         try:
             return int(patient_id_raw)

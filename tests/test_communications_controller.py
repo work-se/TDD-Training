@@ -1,6 +1,5 @@
 import pytest
 
-from console import Console
 from communications_controller import CommunicationsController, CommandTypes, ReceivedInvalidId
 from dtos.statistics_dto import StatisticsDto
 from tests.mocks.console_mock import ConsoleMock
@@ -34,16 +33,6 @@ def test_command_types_internal_logic(en_command, ru_command, expected_type):
     assert CommandTypes(en_command) == expected_type, "По команде получен enum instance отличный от ожидаемого"
 
 
-def test_default_communications_controller_creation():
-    communications_controller = CommunicationsController()
-    assert isinstance(communications_controller._console, Console), "Неверный тип атрибута после создания"
-
-
-def test_custom_communications_controller_creation():
-    communications_controller = CommunicationsController(ConsoleMock())
-    assert isinstance(communications_controller._console, ConsoleMock), "Неверный тип атрибута после создания"
-
-
 @pytest.mark.parametrize(
     "command,expected_command",
     (
@@ -58,120 +47,137 @@ def test_custom_communications_controller_creation():
     )
 )
 def test_get_command(command, expected_command):
-    with ConsoleMock() as console_mock:
-        communications_controller = CommunicationsController(console_mock)
-        console_mock.add_expected_input(expected_text="Введите команду: ", expected_input=command)
+    console_mock = ConsoleMock()
+    communications_controller = CommunicationsController(console_mock)
+    console_mock.add_expected_input(expected_text="Введите команду: ", expected_input=command)
 
-        parsed_command = communications_controller.get_command()
-        assert parsed_command == expected_command, "Текст преобразован в неверную команду"
+    parsed_command = communications_controller.get_command()
+    assert parsed_command == expected_command, "Текст преобразован в неверную команду"
+    console_mock.check_all_mocks_used()
 
 
 def test_get_wrong_command():
-    with ConsoleMock() as console_mock:
-        communications_controller = CommunicationsController(console_mock)
-        console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="wrong command")
-        console_mock.add_expected_print(print_text="Неизвестная команда! Попробуйте ещё раз.")
+    console_mock = ConsoleMock()
+    communications_controller = CommunicationsController(console_mock)
+    console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="wrong command")
+    console_mock.add_expected_print(print_text="Неизвестная команда! Попробуйте ещё раз.")
 
-        parsed_command = communications_controller.get_command()
-        assert parsed_command is None, "Неизвестная команда преобразована в какую-то из известных команд"
+    parsed_command = communications_controller.get_command()
+    assert parsed_command is None, "Неизвестная команда преобразована в какую-то из известных команд"
+    console_mock.check_all_mocks_used()
 
 
-def test_patient_id():
-    with ConsoleMock() as console_mock:
-        communications_controller = CommunicationsController(console_mock)
-        console_mock.add_expected_input(expected_text="Введите ID пациента: ", expected_input="1")
+def test_get_patient_id():
+    console_mock = ConsoleMock()
+    communications_controller = CommunicationsController(console_mock)
+    console_mock.add_expected_input(expected_text="Введите ID пациента: ", expected_input="1")
 
-        patient_id = communications_controller.get_patient_id()
-        assert patient_id == 1, "Получен неожиданный id пациента"
+    patient_id = communications_controller.get_patient_id()
+    assert patient_id == 1, "Получен неожиданный id пациента"
+    console_mock.check_all_mocks_used()
 
 
 @pytest.mark.parametrize(
     "wrong_id", ("asd", "1.2", "1,2")
 )
-def test_wrong_patient_id(wrong_id):
-    with ConsoleMock() as console_mock:
-        communications_controller = CommunicationsController(console_mock)
-        console_mock.add_expected_input(expected_text="Введите ID пациента: ", expected_input=wrong_id)
+def test_get_wrong_patient_id(wrong_id):
+    console_mock = ConsoleMock()
+    communications_controller = CommunicationsController(console_mock)
+    console_mock.add_expected_input(expected_text="Введите ID пациента: ", expected_input=wrong_id)
 
-        with pytest.raises(ReceivedInvalidId) as exception:
-            communications_controller.get_patient_id()
-        assert "Ошибка ввода. ID пациента должно быть числом (целым, положительным)" == str(exception.value), \
-            "Неожиданный текст ошибки"
+    with pytest.raises(ReceivedInvalidId) as exception:
+        communications_controller.get_patient_id()
+    assert "Ошибка ввода. ID пациента должно быть числом (целым, положительным)" == str(exception.value), \
+        "Неожиданный текст ошибки"
+    console_mock.check_all_mocks_used()
 
 
 def test_confirm_discharge_patient():
-    with ConsoleMock() as console_mock:
-        communications_controller = CommunicationsController(console_mock)
+    console_mock = ConsoleMock()
+    communications_controller = CommunicationsController(console_mock)
 
-        console_mock.add_expected_input(expected_text="Желаете этого пациента выписать? (да/нет)", expected_input="да")
-        answer = communications_controller.request_confirm_discharge_patient()
-        assert answer is True, "Неверно интерпретировано подтверждение выписки пациента"
+    console_mock.add_expected_input(expected_text="Желаете этого пациента выписать? (да/нет)", expected_input="да")
+    answer = communications_controller.request_confirm_discharge_patient()
+    assert answer is True, "Неверно интерпретировано подтверждение выписки пациента"
+    console_mock.check_all_mocks_used()
 
-        console_mock.add_expected_input("Желаете этого пациента выписать? (да/нет)", "нет")
-        answer = communications_controller.request_confirm_discharge_patient()
-        assert answer is False, "Неверно интерпретировано подтверждение выписки пациента"
+
+def test_not_confirm_discharge_patient():
+    console_mock = ConsoleMock()
+    communications_controller = CommunicationsController(console_mock)
+    console_mock.add_expected_input("Желаете этого пациента выписать? (да/нет)", "нет")
+    answer = communications_controller.request_confirm_discharge_patient()
+    assert answer is False, "Неверно интерпретировано подтверждение выписки пациента"
+    console_mock.check_all_mocks_used()
 
 
 def test_print_change_patient_status():
-    with ConsoleMock() as console_mock:
-        communications_controller = CommunicationsController(console_mock)
-        console_mock.add_expected_print(print_text="Новый статус пациента: Новый статус")
+    console_mock = ConsoleMock()
+    communications_controller = CommunicationsController(console_mock)
+    console_mock.add_expected_print(print_text="Новый статус пациента: Новый статус")
 
-        communications_controller.print_change_patient_status("Новый статус")
+    communications_controller.print_change_patient_status("Новый статус")
+    console_mock.check_all_mocks_used()
 
 
 def test_print_current_patient_status():
-    with ConsoleMock() as console_mock:
-        communications_controller = CommunicationsController(console_mock)
-        console_mock.add_expected_print(print_text="Статус пациента: Текущий статус")
+    console_mock = ConsoleMock()
+    communications_controller = CommunicationsController(console_mock)
+    console_mock.add_expected_print(print_text="Статус пациента: Текущий статус")
 
-        communications_controller.print_current_patient_status("Текущий статус")
+    communications_controller.print_current_patient_status("Текущий статус")
+    console_mock.check_all_mocks_used()
 
 
 def test_print_end_session():
-    with ConsoleMock() as console_mock:
-        communications_controller = CommunicationsController(console_mock)
-        console_mock.add_expected_print(print_text="Сеанс завершён.")
+    console_mock = ConsoleMock()
+    communications_controller = CommunicationsController(console_mock)
+    console_mock.add_expected_print(print_text="Сеанс завершён.")
 
-        communications_controller.print_end_session()
+    communications_controller.print_end_session()
+    console_mock.check_all_mocks_used()
 
 
 def test_print_hospital_statistics():
-    with ConsoleMock() as console_mock:
-        communications_controller = CommunicationsController(console_mock)
-        statuses = [
-            StatisticsDto(status_name="Болен", patients_count=199),
-            StatisticsDto(status_name="Готов к выписке", patients_count=1)
-        ]
+    console_mock = ConsoleMock()
+    communications_controller = CommunicationsController(console_mock)
+    statuses = [
+        StatisticsDto(status_name="Болен", patients_count=199),
+        StatisticsDto(status_name="Готов к выписке", patients_count=1)
+    ]
 
-        console_mock.add_expected_print(print_text="Статистика по статусам:")
-        console_mock.add_expected_print(print_text='- в статусе "Болен": 199 чел.')
-        console_mock.add_expected_print(print_text='- в статусе "Готов к выписке": 1 чел.')
+    console_mock.add_expected_print(print_text="Статистика по статусам:")
+    console_mock.add_expected_print(print_text='- в статусе "Болен": 199 чел.')
+    console_mock.add_expected_print(print_text='- в статусе "Готов к выписке": 1 чел.')
 
-        communications_controller.print_hospital_statistics(statuses)
+    communications_controller.print_hospital_statistics(statuses)
+    console_mock.check_all_mocks_used()
 
 
 def test_print_patients_cant_die():
-    with ConsoleMock() as console_mock:
-        communications_controller = CommunicationsController(console_mock)
-        console_mock.add_expected_print(
-            print_text="Ошибка. Нельзя понизить самый низкий статус (наши пациенты не умирают)"
-        )
+    console_mock = ConsoleMock()
+    communications_controller = CommunicationsController(console_mock)
+    console_mock.add_expected_print(
+        print_text="Ошибка. Нельзя понизить самый низкий статус (наши пациенты не умирают)"
+    )
 
-        communications_controller.print_patients_cant_die()
+    communications_controller.print_patients_cant_die()
+    console_mock.check_all_mocks_used()
 
 
 def test_print_patient_discharged():
-    with ConsoleMock() as console_mock:
-        communications_controller = CommunicationsController(console_mock)
-        console_mock.add_expected_print(print_text="Пациент выписан из больницы")
+    console_mock = ConsoleMock()
+    communications_controller = CommunicationsController(console_mock)
+    console_mock.add_expected_print(print_text="Пациент выписан из больницы")
 
-        communications_controller.print_patient_discharged()
+    communications_controller.print_patient_discharged()
+    console_mock.check_all_mocks_used()
 
 
 def test_print_patient_status_not_changed():
-    with ConsoleMock() as console_mock:
-        communications_controller = CommunicationsController(console_mock)
-        console_mock.add_expected_print(print_text='Пациент остался в статусе "Текущий статус"')
+    console_mock = ConsoleMock()
+    communications_controller = CommunicationsController(console_mock)
+    console_mock.add_expected_print(print_text='Пациент остался в статусе "Текущий статус"')
 
-        communications_controller.print_patient_status_not_changed("Текущий статус")
+    communications_controller.print_patient_status_not_changed("Текущий статус")
+    console_mock.check_all_mocks_used()

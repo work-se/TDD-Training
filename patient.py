@@ -20,4 +20,4 @@ class Patient:
         return f"[Patient] (id={self.patient_id}, status={self.status})"
 
     def __eq__(self, other: 'Patient'):
-        return self.patient_id == other.patient_id and self.status == self.status
+        return self.patient_id == other.patient_id and self.status == other.status

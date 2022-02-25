@@ -114,3 +114,12 @@ class Hospital:
 
     def __str__(self):
         return f"[Hospital] (patients num={self._patients_index}, patients={self._patients})"
+
+    def __eq__(self, other):
+        result = False
+        if isinstance(other, Hospital):
+            result = self._patients_index == other._patients_index and self._patients == other._patients
+        # если передан List[Patient]
+        elif isinstance(other, list) and all([isinstance(patient, Patient) for patient in other]):
+            result = list(self._patients.values()) == other
+        return result

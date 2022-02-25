@@ -44,14 +44,10 @@ def test_add_patients_to_hospital():
         assert patient.status == status, "Неверный статус у созданного пользователя"
 
 
-@pytest.fixture
-def hospital_with_patient() -> Hospital:
-    return Hospital(patients=[Patient(patient_id=1, status=1)])
-
-
-def test_increase_patient_status(hospital_with_patient):
-    hospital_with_patient.increase_patient_status(patient_id=1)
-    assert hospital_with_patient._patients[1].status == 2, "Неверный статус у пациента после увеличения"
+def test_increase_patient_status():
+    hospital = Hospital(patients=[Patient(patient_id=1, status=1)])
+    hospital.increase_patient_status(patient_id=1)
+    assert hospital._patients[1].status == 2, "Неверный статус у пациента после увеличения"
 
 
 def test_increase_non_existent_patient_status():
@@ -68,9 +64,10 @@ def test_increase_minimum_status():
     assert "Пациент уже с максимальным статусом" in str(exception.value)
 
 
-def test_decrease_patient_status(hospital_with_patient):
-    hospital_with_patient.decrease_patient_status(patient_id=1)
-    assert hospital_with_patient._patients[1].status == 0, "Неверный статус у пациента после уменьшения"
+def test_decrease_patient_status():
+    hospital = Hospital(patients=[Patient(patient_id=1, status=1)])
+    hospital.decrease_patient_status(patient_id=1)
+    assert hospital._patients[1].status == 0, "Неверный статус у пациента после уменьшения"
 
 
 def test_decrease_non_existent_patient_status():
@@ -87,8 +84,9 @@ def test_decrease_minimum_status():
     assert "Ошибка. Нельзя понизить самый низкий статус (наши пациенты не умирают)" == str(exception.value)
 
 
-def test_get_patient_status(hospital_with_patient):
-    status_name = hospital_with_patient.get_patient_status_name(patient_id=1)
+def test_get_patient_status():
+    hospital = Hospital(patients=[Patient(patient_id=1, status=1)])
+    status_name = hospital.get_patient_status_name(patient_id=1)
     assert status_name == "Болен", "Неверный статус у пациента после увеличения"
 
 

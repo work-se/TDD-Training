@@ -56,7 +56,7 @@ def test_increase_non_existent_patient_status():
         hospital.increase_patient_status(patient_id=1)
 
 
-def test_increase_minimum_status():
+def test_increase_maximum_status():
     hospital = Hospital(patients=[Patient(patient_id=1, status=3)])
 
     with pytest.raises(PatientAlreadyWithMaxStatus) as exception:
@@ -168,20 +168,20 @@ def test_discharge_non_existed_patient():
 
 def test_can_increase_patient_status():
     hospital = Hospital(patients=[Patient(patient_id=1, status=3)])
-    assert hospital.can_increase_patient_status(1) is False, \
+    assert not hospital.can_increase_patient_status(1), \
         "Неверный результат проверки увеличения максимального статуса"
 
     hospital = Hospital(patients=[Patient(patient_id=1, status=2)])
-    assert hospital.can_increase_patient_status(1) is True, \
+    assert hospital.can_increase_patient_status(1), \
         "Неверный результат проверки увеличения НЕ максимального статуса"
 
 
 def test_can_decrease_patient_status():
     hospital = Hospital(patients=[Patient(patient_id=1, status=0)])
-    assert hospital.can_decrease_patient_status(1) is False, \
+    assert not hospital.can_decrease_patient_status(1), \
         "Неверный результат проверки уменьшения минимального статуса"
 
     hospital = Hospital(patients=[Patient(patient_id=1, status=1)])
-    assert hospital.can_decrease_patient_status(1) is True, \
+    assert hospital.can_decrease_patient_status(1), \
         "Неверный результат проверки уменьшения НЕ минимального статуса"
 

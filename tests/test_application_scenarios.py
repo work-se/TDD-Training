@@ -8,6 +8,39 @@ from patient import Patient
 from tests.mocks.console_mock import ConsoleMock
 
 
+def test_base_patient_actions():
+    console_mock = ConsoleMock()
+    init_hospital = Hospital(
+        [Patient(1, 0), Patient(2, 1), Patient(3, 2), Patient(4, 3)]
+    )
+    communications_controller = CommunicationsController(console_mock)
+    hospital_controller = HospitalController(communications_controller, init_hospital)
+    application = Application(communications_controller, hospital_controller)
+
+    console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="status down")
+    console_mock.add_expected_input("Введите ID пациента: ", "4")
+    console_mock.add_expected_print(print_text="Новый статус пациента: Слегка болен")
+
+    console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="status up")
+    console_mock.add_expected_input("Введите ID пациента: ", "1")
+    console_mock.add_expected_print(print_text="Новый статус пациента: Болен")
+
+    console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="get id")
+    console_mock.add_expected_input("Введите ID пациента: ", "2")
+    console_mock.add_expected_print(print_text="Статус пациента: Болен")
+
+    console_mock.add_expected_input("Введите команду: ", "stop")
+    console_mock.add_expected_print("Сеанс завершён.")
+
+    application.exec_command_loop()
+    console_mock.check_all_mocks_used()
+
+    expected_hospital = Hospital(
+        [Patient(1, 1), Patient(2, 1), Patient(3, 2), Patient(4, 2)]
+    )
+    assert init_hospital == expected_hospital, "Изменения в hospital после теста не соответствуют ожидаемым"
+
+
 def test_wrong_data_input():
     console_mock = ConsoleMock()
     communications_controller = CommunicationsController(console_mock)
@@ -17,7 +50,7 @@ def test_wrong_data_input():
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="Неизвестная команда")
     console_mock.add_expected_print(print_text="Неизвестная команда! Попробуйте ещё раз.")
 
-    for wrong_input_patient_id in ("asd", "1.2", "1,2"):
+    for wrong_input_patient_id in ("двадцать", "1.2", "1,2"):
         console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="get id")
         console_mock.add_expected_input("Введите ID пациента: ", wrong_input_patient_id)
         console_mock.add_expected_print(
@@ -52,7 +85,7 @@ def test_access_non_existent_patient(command):
     console_mock.check_all_mocks_used()
 
 
-def test_decrease_patient_status_and_try_to_decrease_min_patient_status():
+def test_decrease_min_patient_status():
     console_mock = ConsoleMock()
     communications_controller = CommunicationsController(console_mock)
     init_test_hospital = Hospital(
@@ -60,10 +93,6 @@ def test_decrease_patient_status_and_try_to_decrease_min_patient_status():
     )
     hospital_controller = HospitalController(communications_controller, init_test_hospital)
     application = Application(communications_controller, hospital_controller)
-
-    console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="status down")
-    console_mock.add_expected_input("Введите ID пациента: ", "1")
-    console_mock.add_expected_print(print_text="Новый статус пациента: Болен")
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="status down")
     console_mock.add_expected_input("Введите ID пациента: ", "3")
@@ -76,7 +105,7 @@ def test_decrease_patient_status_and_try_to_decrease_min_patient_status():
     console_mock.check_all_mocks_used()
 
     end_test_hospital = Hospital(
-        [Patient(1, 1), Patient(2, 2), Patient(3, 0)]
+        [Patient(1, 2), Patient(2, 2), Patient(3, 0)]
     )
     assert init_test_hospital == end_test_hospital, "Изменения в hospital после теста не соответствуют ожидаемым"
 
@@ -89,10 +118,6 @@ def test_increase_patient_status_and_discharge_patient():
     communications_controller = CommunicationsController(console_mock)
     hospital_controller = HospitalController(communications_controller, init_test_hospital)
     application = Application(communications_controller, hospital_controller)
-
-    console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="status up")
-    console_mock.add_expected_input("Введите ID пациента: ", "1")
-    console_mock.add_expected_print(print_text="Новый статус пациента: Слегка болен")
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="status up")
     console_mock.add_expected_input("Введите ID пациента: ", "3")
@@ -111,13 +136,13 @@ def test_increase_patient_status_and_discharge_patient():
     console_mock.check_all_mocks_used()
 
     end_test_hospital_patients = [
-        Patient(1, 2), Patient(3, 3)
+        Patient(1, 1), Patient(3, 3)
     ]
     assert init_test_hospital == end_test_hospital_patients, \
         "Изменения в hospital после теста не соответствуют ожидаемым"
 
 
-def test_get_patient_status_and_hospital_statistics():
+def test_calculate_hospital_statistics():
     console_mock = ConsoleMock()
     hospital = Hospital(
         [Patient(1, 1), Patient(2, 2), Patient(3, 2), Patient(4, 3)]
@@ -125,10 +150,6 @@ def test_get_patient_status_and_hospital_statistics():
     communications_controller = CommunicationsController(console_mock)
     hospital_controller = HospitalController(communications_controller, hospital)
     application = Application(communications_controller, hospital_controller)
-
-    console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="get id")
-    console_mock.add_expected_input("Введите ID пациента: ", "1")
-    console_mock.add_expected_print(print_text="Статус пациента: Болен")
 
     console_mock.add_expected_input(expected_text="Введите команду: ", expected_input="calculate statistics")
     console_mock.add_expected_print(print_text="Статистика по статусам:")

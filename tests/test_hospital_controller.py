@@ -95,14 +95,17 @@ def test_increase_max_patient_status_and_discharge_patient():
     communication_controller = MagicMock()
     hospital_controller = HospitalController(communication_controller, hospital)
 
+    # will be called
     communication_controller.get_patient_id = MagicMock(return_value=1)
     hospital.can_increase_patient_status = MagicMock(return_value=False)
-    hospital.increase_patient_status = MagicMock()
     communication_controller.request_confirm_discharge_patient = MagicMock(return_value=True)
     hospital.discharge_patient = MagicMock()
     communication_controller.print_patient_discharged = MagicMock()
+    # will not be called
+    hospital.increase_patient_status = MagicMock()
 
     hospital_controller.increase_patient_status()
+
     communication_controller.get_patient_id.assert_called()
     hospital.can_increase_patient_status.assert_called_with(1)
     hospital.increase_patient_status.assert_not_called()
@@ -116,13 +119,15 @@ def test_increase_max_patient_status_and_not_discharge_patient():
     communication_controller = MagicMock()
     hospital_controller = HospitalController(communication_controller, hospital)
 
+    # will be called
     communication_controller.get_patient_id = MagicMock(return_value=1)
     hospital.can_increase_patient_status = MagicMock(return_value=False)
-    hospital.increase_patient_status = MagicMock()
     communication_controller.request_confirm_discharge_patient = MagicMock(return_value=False)
-    hospital.discharge_patient = MagicMock()
     hospital.get_patient_status_name = MagicMock(return_value="Готов к выписке")
     communication_controller.print_patient_status_not_changed = MagicMock()
+    # will not be called
+    hospital.increase_patient_status = MagicMock()
+    hospital.discharge_patient = MagicMock()
 
     hospital_controller.increase_patient_status()
     communication_controller.get_patient_id.assert_called()
@@ -170,10 +175,12 @@ def test_non_existent_patient_increase_status():
     communication_controller = MagicMock()
     hospital_controller = HospitalController(communication_controller, hospital)
 
+    # will be called
     communication_controller.get_patient_id = MagicMock(return_value=1)
     hospital.can_increase_patient_status = MagicMock(side_effect=PatientDoesNotExists)
-    hospital.increase_patient_status = MagicMock()
     communication_controller.print_exception = MagicMock()
+    # will not be called
+    hospital.increase_patient_status = MagicMock()
 
     hospital_controller.increase_patient_status()
     communication_controller.get_patient_id.assert_called()

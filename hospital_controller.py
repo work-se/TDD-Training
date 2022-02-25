@@ -7,9 +7,8 @@ class HospitalController:
 
     def __init__(self, communication_controller=None, hospital=None):
         self._hospital = hospital if hospital is not None else Hospital()
-        self._communication_controller = (
+        self._communication_controller = \
             communication_controller if communication_controller is not None else CommunicationsController()
-        )
 
     def decrease_patient_status(self):
         try:

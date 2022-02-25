@@ -77,7 +77,7 @@ class Hospital:
 
     def increase_patient_status(self, patient_id: int):
         patient = self._get_patient(patient_id)
-        if patient.status == self.MAX_STATUS:
+        if not self.can_increase_patient_status(patient_id):
             raise PatientAlreadyWithMaxStatus
         patient.increase_status()
 
@@ -87,7 +87,7 @@ class Hospital:
 
     def decrease_patient_status(self, patient_id: int):
         patient = self._get_patient(patient_id)
-        if patient.status == self.MIN_STATUS:
+        if not self.can_decrease_patient_status(patient_id):
             raise PatientAlreadyWithMinStatus
         patient.decrease_status()
 
